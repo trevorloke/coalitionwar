@@ -91,8 +91,12 @@ export function applyEffect(game, state, e, ctx = {}) {
       break;
     }
     case 'commandPoints': {
+      // Events fire after sheets are sealed, so CP from an event pays out on
+      // the NEXT round's budget (a penalty still bites the sealed budget
+      // indirectly by carrying forward too).
       for (const pid of powersOf(state, e.power)) {
-        state.powers[pid].cp = Math.max(0, state.powers[pid].cp + e.delta);
+        const p = state.powers[pid];
+        p.cpCarry = (p.cpCarry ?? 0) + e.delta;
       }
       break;
     }

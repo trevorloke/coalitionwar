@@ -240,7 +240,9 @@ export function reckon(game, state, rng) {
     state.round += 1;
     state.phase = 'intel';
     for (const pid of Object.keys(POWERS)) {
-      state.powers[pid].cp = computeCP(game, state, pid);
+      const p = state.powers[pid];
+      p.cp = Math.max(1, computeCP(game, state, pid) + (p.cpCarry ?? 0));
+      p.cpCarry = 0;
     }
   }
 }
