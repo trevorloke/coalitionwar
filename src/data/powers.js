@@ -53,7 +53,7 @@ export const POWERS = {
   },
   germany: {
     id: 'germany', name: 'Germany', short: 'Germany', side: 'axis',
-    color: '#343a40', atWar: true,
+    color: '#5c6658', atWar: true,
     ratings: { industry: 4, manpower: 4, sea: 2, intel: 3 },
     signature: 'interior_lines',
     signatureText: 'Interior lines: shift strength between the Western and Eastern fronts at half cost. A successful offensive permits one free advance into the vacated territory.',
@@ -65,7 +65,7 @@ export const POWERS = {
   },
   japan: {
     id: 'japan', name: 'Japan', short: 'Japan', side: 'axis',
-    color: '#9d0208', atWar: true, // vs China; global war on Pacific initiation
+    color: '#c2622e', atWar: true, // vs China; global war on Pacific initiation
     ratings: { industry: 3, manpower: 3, sea: 5, intel: 2 },
     signature: 'carrier_doctrine',
     signatureText: 'Carrier doctrine: in a naval offensive, roll and apply hits before the defender rolls. Once per game, declare a Decisive Battle and double your dice for one sea zone.',

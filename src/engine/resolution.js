@@ -401,7 +401,10 @@ export function resolveRound(game, state, rng, options = {}) {
   }
 
   // The coin: initiative side settles exactly one contested battle without dice.
-  const coinTarget = options.coinBattle ?? pickCoinBattle(game, state);
+  // Each side may pre-declare its choice before any dice; the initiative
+  // holder's declaration is the one that counts.
+  const coinTarget = options.coinBattleBySide?.[state.initiative]
+    ?? options.coinBattle ?? pickCoinBattle(game, state);
   state.coinBattle = coinTarget;
 
   // Resolve theatre by theatre, naval first.
