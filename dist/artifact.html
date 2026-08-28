@@ -6959,21 +6959,22 @@ function resolveBattle(game, state, rng, bt, isCoinBattle) {
     captureTerritory(game, state, bt, survivors);
     state.roundLog.push(
       `${powers} take ${t.name} (${atkDice} dice on ${atkTh}+ → ${atkHits} hits; defense ${defHits} hits back)`);
-    recordBattle(state, bt, 'captured');
+    recordBattle(state, bt, 'captured', defOwner);
   } else {
     returnCommitted(game, state, bt);
     if (ts.strength <= 0) { ts.strength = 0; }
     state.roundLog.push(
       `${powers} fail before ${t.name} (${atkHits} hits vs ${defStrength ? defHits : 0} back; defender holds)`);
-    recordBattle(state, bt, 'held');
+    recordBattle(state, bt, 'held', defOwner);
   }
 }
 
-function recordBattle(state, bt, result) {
+function recordBattle(state, bt, result, defOwner) {
   state.battleRecords = state.battleRecords || [];
   state.battleRecords.push({
     target: bt.target, side: bt.side, kind: bt.kind, result,
     powers: bt.attackers.map(a => a.power),
+    defenderController: defOwner != null ? controllerOf(state, defOwner) : null,
   });
 }
 
