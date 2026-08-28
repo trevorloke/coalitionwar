@@ -4,7 +4,7 @@
   "description": "Coalition 1939 — an eight-player WWII grand strategy game where the side that coordinates beats the side with the best player.",
   "type": "module",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.js",
     "sim": "node sim/run.js",
     "validate": "node sim/validate-data.js",
     "build": "node build.js"
