@@ -163,9 +163,11 @@ function showPlayerAid() {
   Intel op 2 · Lend-lease 1 (USA free) · Build costs production.</p>
   <p><strong>Coalition pool.</strong> Earn: +1 per extra power in a joint order, +1 per
   lend-lease, +2 per Supreme Commander elected in a 3-power theatre.
-  Spend: 2 reroll · 2 initiative · 3 emergency resupply · 4 cancel an event.</p>
+  Spend: 2 reroll a battle · 2 per +1 on the initiative roll · 3 emergency resupply ·
+  4 cancel an event.</p>
   <p><strong>The coin.</strong> Once per round the initiative holder picks one contested
-  battle: it is settled by coin flip. Nothing modifies it.</p>
+  battle: a coin settles it. Heads the attack carries; tails the line holds. The loser
+  loses half, the winner is untouched, and nothing modifies it.</p>
   <p><strong>Victory.</strong> Hold every enemy capital, outscore at summer 1945 (margin
   under 5 is a contested peace), or break the enemy's Home Front.</p>
   <p style="border-top:1px solid var(--line);padding-top:8px"><strong>Winners rank by
@@ -569,7 +571,8 @@ function specialButtons(pid) {
     }
   }
   const side = sideOfPower(s, pid);
-  if (s.pool[side] > 0) b.push(`<button data-special="bid" style="font-size:11px">Bid initiative (pool)</button>`);
+  if (s.pool[side] >= 2) b.push(`<button data-special="bid" style="font-size:11px">Bid initiative (2 pool per +1)</button>`);
+  if (s.pool[side] >= 3) b.push(`<button data-special="resupply" style="font-size:11px">Emergency resupply (3 pool)</button>`);
   return b.join('');
 }
 
@@ -590,9 +593,12 @@ function startSpecial(kind) {
       nid => { app.draft.push({ type: 'defect', nation: nid }); refresh(); });
   } else if (kind === 'bid') {
     const side = sideOfPower(s, pid);
-    pickModal(`Spend how much of the ${side} pool on initiative?`,
-      Array.from({ length: Math.min(4, s.pool[side]) }, (_, i) => String(i + 1)),
+    pickModal(`How many +1s on the ${side} initiative roll? (2 pool each)`,
+      Array.from({ length: Math.min(3, Math.floor(s.pool[side] / 2)) }, (_, i) => String(i + 1)),
       n => { app.draft.push({ type: 'initiative_bid', points: parseInt(n, 10) }); refresh(); });
+  } else if (kind === 'resupply') {
+    app.pending = { type: 'pool_resupply', step: 'territory' };
+    $('#map-hint').textContent = 'Click the supplied friendly territory to resupply (+2 strength, 3 pool).';
   }
 }
 
@@ -649,6 +655,10 @@ function onTerritoryClick(tid) {
     app.draft.push({ type: 'decisive_battle', zone: tid });
     app.pending = null; refresh(); return;
   }
+  if (p.type === 'pool_resupply') {
+    app.draft.push({ type: 'pool_resupply', territory: tid });
+    app.pending = null; refresh(); return;
+  }
   if (p.step === 'source') {
     if (p.type === 'entrench') { app.draft.push({ type: 'entrench', territory: tid }); app.pending = null; refresh(); return; }
     if (p.type === 'build') {
@@ -690,7 +700,11 @@ function onTerritoryClick(tid) {
           });
         }
       } else if (p.type === 'naval') {
-        pickModal('Mission?', ['contest', 'escort', 'raid'], mission => {
+        const missions = ['contest', 'escort', 'raid'];
+        if (s.powers[app.current].doctrines.some(d => g.game.doctrines[d]?.passive.kind === 'bombing')) {
+          missions.push('bomb');
+        }
+        pickModal('Mission?', missions, mission => {
           app.draft.push({ type: 'naval', zone: tid, from: p.source, strength: n, mission });
           refresh();
         });

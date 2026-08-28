@@ -13,6 +13,12 @@ const USSR_INDUSTRIAL = ['moscow', 'leningrad', 'stalingrad', 'urals'];
 export function reckon(game, state, rng) {
   const log = m => state.roundLog.push(`[reckoning] ${m}`);
 
+  // 0. The one-round first strike for jumping a neutral expires here.
+  for (const k of Object.keys(state.firstStrike)) {
+    state.firstStrike[k] -= 1;
+    if (state.firstStrike[k] <= 0) delete state.firstStrike[k];
+  }
+
   // 1. Partisans: China bleeds Japan for every stolen province; partisan doctrines too.
   let jpHeld = 0;
   for (const tid of state.partisanBase) {
@@ -24,6 +30,27 @@ export function reckon(game, state, rng) {
   if (partisanHits > 0 && state.powers.china.atWar) {
     bleedPower(game, state, 'japan', partisanHits, 'china_manchuria');
     log(`Chinese partisans cost Japan ${partisanHits} strength`);
+  }
+  // Every other partisan-doctrine holder raises resistance in its side's
+  // occupied ground: the enemy power holding most of it bleeds 1 per round.
+  for (const pid of Object.keys(POWERS)) {
+    if (pid === 'china' || !state.powers[pid].atWar) continue;
+    if (!hasDoctrine(game, state, pid, 'partisans')) continue;
+    const side = state.powers[pid].side;
+    const counts = {};
+    for (const [tid, t] of Object.entries(game.map)) {
+      const setupSide = t.setup.owner === 'france' ? 'allied'
+        : state.powers[t.setup.owner] ? state.powers[t.setup.owner].side
+          : state.nations[t.setup.owner] ? state.nations[t.setup.owner].allegiance : null;
+      if (setupSide !== side) continue;
+      const holder = controllerOf(state, state.t[tid].owner);
+      if (holder && state.powers[holder].side !== side) counts[holder] = (counts[holder] || 0) + 1;
+    }
+    const worst = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (worst && worst[1] >= 2) {
+      bleedPower(game, state, worst[0], 1, null);
+      log(`${pid}'s partisans cost ${worst[0]} 1 strength in the occupied lands`);
+    }
   }
 
   // 2. Out-of-supply attrition.
@@ -78,6 +105,10 @@ export function reckon(game, state, rng) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type !== 'lend_lease') continue;
+      if (hasFlag(state, 'no_lend_lease')) {
+        log(`${pid} lend-lease to ${o.to} is blocked this round`);
+        continue;
+      }
       if (!lendLeaseRouteOpen(game, state, pid, o.to)) {
         log(`${pid} lend-lease to ${o.to} fails: no open route`);
         continue;
@@ -95,8 +126,12 @@ export function reckon(game, state, rng) {
   for (const [pid, sheet] of Object.entries(state.orders)) {
     if (!sheet) continue;
     const p = state.powers[pid];
+    const tags = ownedTagsOf(state, pid);
     for (const o of sheet.orders) {
       if (o.type !== 'build') continue;
+      // The site may have fallen since the order was written; no power pays
+      // to reinforce the enemy garrison standing in its factory.
+      if (!tags.includes(state.t[o.territory].owner) || !state.t[o.territory].supplied) continue;
       const perStrength = p.ratings.manpower >= 3 ? BUILD_COSTS.strength : BUILD_COSTS.strength_low_manpower;
       let unitCost = o.what === 'fort' ? BUILD_COSTS.fort : o.what === 'ship' ? BUILD_COSTS.ship : perStrength;
       if (hasFlag(state, 'war_production', pid)) unitCost = Math.max(1, unitCost - 1);
@@ -157,7 +192,12 @@ export function reckon(game, state, rng) {
     })) delta -= 1;
     p.homeFront = Math.max(0, Math.min(10, p.homeFront + delta));
     if (delta !== 0) log(`${pid} home front ${delta > 0 ? '+' : ''}${delta} → ${p.homeFront}`);
-    p.forcedNegotiation = p.homeFront === 0 && pid !== 'italy';
+    // Forced negotiation begins at zero and only lifts once Home Front
+    // recovers to 2 (Italy flips instead of negotiating).
+    if (pid !== 'italy') {
+      if (p.homeFront === 0) p.forcedNegotiation = true;
+      else if (p.homeFront >= 2) p.forcedNegotiation = false;
+    }
   }
 
   // 8. Seat changes: Italy flips, France falls.
@@ -176,7 +216,7 @@ export function reckon(game, state, rng) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type === 'defect' && state.nations[o.nation]?.pressure >= 7) defectNation(game, state, o.nation, log);
-      if (o.type === 'enter_war') tryEnter(game, state, pid, log);
+      if (o.type === 'enter_war') tryEnter(game, state, pid, log, rng);
     }
   }
   for (const [nid, n] of Object.entries(state.nations)) {
@@ -200,13 +240,13 @@ export function reckon(game, state, rng) {
     log('Italy declares war — the Mediterranean ignites');
   }
 
-  // 11. Flags, mods, corridor force-closures tick down.
+  // 11. Flags, mods, corridor force-closures, pressure locks tick down.
   for (const f of state.activeFlags) f.rounds--;
   state.activeFlags = state.activeFlags.filter(f => f.rounds > 0);
   for (const m of state.thresholdMods) m.rounds--;
   state.thresholdMods = state.thresholdMods.filter(m => m.rounds > 0);
   for (const c of Object.values(state.corridors)) if (c.forcedClosed > 0) c.forcedClosed--;
-  for (const p of Object.values(state.powers)) {
+  for (const p of [...Object.values(state.powers), ...Object.values(state.nations)]) {
     if (p.pressureLock?.rounds > 0) {
       p.pressureLock.rounds--;
       if (p.pressureLock.rounds === 0) {
@@ -233,6 +273,8 @@ export function reckon(game, state, rng) {
   state.orders = {};
   state.commits = {};
   state.commanders = {};
+  state.commanderSpent = {};
+  state.bombedThisRound = {};
   state.decisiveZone = null;
   state.gameLog.push(...state.roundLog);
   state.roundLog = [];
@@ -241,7 +283,11 @@ export function reckon(game, state, rng) {
     state.phase = 'intel';
     for (const pid of Object.keys(POWERS)) {
       const p = state.powers[pid];
-      p.cp = Math.max(1, computeCP(game, state, pid) + (p.cpCarry ?? 0));
+      const tags = ownedTagsOf(state, pid);
+      const holdsLand = Object.entries(state.t).some(([tid, ts]) =>
+        game.map[tid].type === 'land' && tags.includes(ts.owner));
+      // A power driven from every territory has nothing left to command.
+      p.cp = holdsLand ? Math.max(1, computeCP(game, state, pid) + (p.cpCarry ?? 0)) : 0;
       p.cpCarry = 0;
     }
   }
@@ -323,9 +369,20 @@ function defectNation(game, state, nid, log) {
   log(`${NATIONS[nid].name.toUpperCase()} DEFECTS to the Allies`);
 }
 
-function tryEnter(game, state, pid, log) {
+function tryEnter(game, state, pid, log, rng) {
   const p = state.powers[pid];
-  if (!p.atWar && (p.pressure ?? 0) >= 7) enterWar(game, state, pid, log);
+  if (p.atWar) return;
+  // Italy may choose war from round 1; the GDD's entersRound is only a floor
+  // for the AI's patience.
+  if (pid === 'italy') { enterWar(game, state, pid, log); return; }
+  if (p.pressure === null) return;
+  // Exactly on the threshold, the coin decides the cabinet vote (GDD §06).
+  if (p.pressure === 7 && rng) {
+    if (rng.coin() === 'heads') enterWar(game, state, pid, log);
+    else log(`${POWERS[pid].name} wavers at the brink — the vote fails`);
+  } else if (p.pressure >= 7) {
+    enterWar(game, state, pid, log);
+  }
 }
 
 function enterWar(game, state, pid, log) {
@@ -354,7 +411,7 @@ function advancePressure(game, state) {
   drift('usa', 4);
   // Client nations feel the Red Army coming, and abandon a failing Reich.
   for (const [nid, n] of Object.entries(state.nations)) {
-    if (n.allegiance !== 'axis') continue;
+    if (n.allegiance !== 'axis' || n.pressureLock) continue;
     const home = NATIONS[nid].home;
     let d = 0;
     if (game.map[home].adjacent.some(t =>
@@ -369,12 +426,15 @@ function scoreObjectives(game, state) {
   const held = (tid, side) => sideOfOwner(state, state.t[tid].owner) === side;
   const ownerIs = (tid, tags) => tags.includes(state.t[tid].owner);
 
-  // UK: corridors open + home islands, tracked as good rounds.
+  // UK: corridors open + home islands. Two honors, both live from mid-war so
+  // an early victory still credits them.
   const ukGood = state.corridors.gib_suez.open && state.t.britain.owner === 'uk'
     && ['north_atlantic', 'mid_atlantic', 'western_approaches']
       .filter(z => sideOfOwner(state, state.t[z].owner) === 'axis').length <= 1;
-  state.powers.uk.objectivesMet.goodRounds = (state.powers.uk.objectivesMet.goodRounds || 0) + (ukGood ? 1 : 0);
-  if (state.round >= 12) met('uk', 'lifelines', state.powers.uk.objectivesMet.goodRounds >= 8 && state.t.britain.owner === 'uk');
+  const goodRounds = (state.powers.uk._goodRounds || 0) + (ukGood ? 1 : 0);
+  state.powers.uk._goodRounds = goodRounds;
+  met('uk', 'lifelines', state.round >= 4 && goodRounds >= Math.ceil(state.round * 2 / 3));
+  met('uk', 'hold_home_islands', state.t.britain.owner === 'uk');
 
   // China: survive at Chongqing; tie down Japan from 1942.
   met('china', 'hold_chongqing', state.t.chongqing.owner === 'china');
@@ -382,17 +442,18 @@ function scoreObjectives(game, state) {
     const jp = Object.entries(state.t)
       .filter(([tid, ts]) => ts.owner === 'japan' && game.map[tid].theatre === 'china_manchuria')
       .reduce((s, [, ts]) => s + ts.strength, 0);
-    const prev = state.powers.china.objectivesMet.tieRounds || 0;
-    state.powers.china.objectivesMet.tieRounds = prev + (jp >= 8 ? 1 : 0);
-    met('china', 'tie_down_japan', state.powers.china.objectivesMet.tieRounds >= 4);
+    const prev = state.powers.china._tieRounds || 0;
+    state.powers.china._tieRounds = prev + (jp >= 8 ? 1 : 0);
+    met('china', 'tie_down_japan', state.powers.china._tieRounds >= 4);
   }
 
-  // USSR: Moscow & Baku through 1942 (round 7); reach the Vistula.
+  // USSR: Moscow & Baku through 1942 (round 7); reach the Vistula (Warsaw —
+  // Western Poland; owning your own 1939 border zone does not count).
   if (state.round <= 7 && (state.t.moscow.owner !== 'ussr' || state.t.baku.owner !== 'ussr')) {
-    state.powers.ussr.objectivesMet.lostCore = true;
+    state.powers.ussr._lostCore = true;
   }
-  if (state.round >= 7) met('ussr', 'hold_core_1942', !state.powers.ussr.objectivesMet.lostCore);
-  met('ussr', 'reach_vistula', state.t.w_poland.owner === 'ussr' || state.t.e_poland.owner === 'ussr');
+  if (state.round >= 7) met('ussr', 'hold_core_1942', !state.powers.ussr._lostCore);
+  met('ussr', 'reach_vistula', state.t.w_poland.owner === 'ussr');
 
   // USA: Rhine and two island chains.
   met('usa', 'reach_rhine', ['rhineland', 'ruhr'].some(t => state.t[t].owner === 'usa'));
@@ -404,13 +465,15 @@ function scoreObjectives(game, state) {
   if (held('paris', 'axis')) met('germany', 'take_paris');
   if (held('moscow', 'axis')) met('germany', 'take_moscow');
   if (held('baku', 'axis')) met('germany', 'take_baku');
-  met('germany', 'protect_ruhr', held('ruhr', 'axis'));
+  // Germany's Ruhr objective also demands it stays out of bombing range.
+  if (state.bombedThisRound?.ruhr) state.powers.germany._ruhrBombed = true;
+  met('germany', 'protect_ruhr', held('ruhr', 'axis') && !state.powers.germany._ruhrBombed);
 
   // Japan: southern resources; closed perimeter by end of 1943 (round 9).
   const resources = ['dei', 'malaya'].every(t => state.t[t].owner === 'japan');
-  const prevRes = state.powers.japan.objectivesMet.resRounds || 0;
-  state.powers.japan.objectivesMet.resRounds = resources ? prevRes + 1 : 0;
-  if (state.powers.japan.objectivesMet.resRounds >= 2) met('japan', 'southern_resources');
+  const prevRes = state.powers.japan._resRounds || 0;
+  state.powers.japan._resRounds = resources ? prevRes + 1 : 0;
+  if (state.powers.japan._resRounds >= 2) met('japan', 'southern_resources');
   if (state.round === 9) {
     const perimeter = ['philippines', 'dei', 'malaya', 'burma', 'solomons', 'new_guinea', 'marianas']
       .filter(t => state.t[t].owner === 'japan').length;
@@ -420,16 +483,18 @@ function scoreObjectives(game, state) {
   // Italy: Malta + Suez + the African coast, two consecutive rounds.
   const coast = ['malta', 'egypt', 'tunisia', 'tripolitania', 'cyrenaica']
     .every(t => held(t, 'axis'));
-  const prevMare = state.powers.italy.objectivesMet.mareRounds || 0;
-  state.powers.italy.objectivesMet.mareRounds = coast ? prevMare + 1 : 0;
-  if (state.powers.italy.objectivesMet.mareRounds >= 2) met('italy', 'mare_nostrum_hold');
+  const prevMare = state.powers.italy._mareRounds || 0;
+  state.powers.italy._mareRounds = coast ? prevMare + 1 : 0;
+  if (state.powers.italy._mareRounds >= 2) met('italy', 'mare_nostrum_hold');
 
-  // Independent States: sovereign nations at the end.
-  if (state.round >= 12) {
-    const sovereign = Object.entries(state.nations)
-      .filter(([nid, n]) => n.sovereign && ownerIs(NATIONS[nid].home, [nid])).length;
-    state.powers.indies.objectivesMet.sovereign = sovereign;
-  }
+  // Independent States: sovereignty is worth honors on any ending — a
+  // majority of nations still holding their own capitals is one, all but one
+  // is a second.
+  const sovereign = Object.entries(state.nations)
+    .filter(([nid, n]) => n.sovereign && ownerIs(NATIONS[nid].home, [nid])).length;
+  state.powers.indies._sovereignCount = sovereign;
+  met('indies', 'sovereign_majority', sovereign >= 4);
+  met('indies', 'sovereign_nearly_all', sovereign >= 6);
 
   // Honors = objectives currently satisfied (booleans only).
   for (const p of Object.values(state.powers)) {

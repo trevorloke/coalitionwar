@@ -249,8 +249,18 @@ export function aiOrders(gameObj, powerId, plan, { coordinated = true } = {}) {
     if (naval) orders.push({ type: 'decisive_battle', zone: naval.zone });
   }
   const side = sideOfPower(state, powerId);
-  if (coordinated && state.pool[side] >= 3 && p.ratings.intel >= 3) {
-    orders.push({ type: 'initiative_bid', points: 1 });
+  if (coordinated && state.pool[side] >= 4 && p.ratings.intel >= 3) {
+    orders.push({ type: 'initiative_bid', points: 1 }); // costs 2 pool
+  }
+  // Bomber command works the Ruhr (or any enemy industry in reach).
+  if (hasDoctrineAI(gameObj, powerId, 'bombing') && cp >= 2) {
+    const base = stacksOf(gameObj, powerId).find(({ tid, ts }) => ts.strength >= 1
+      && withinTwo(gameObj, tid, powerId));
+    if (base) {
+      const target = withinTwo(gameObj, base.tid, powerId);
+      orders.push({ type: 'naval', zone: target, from: base.tid, strength: Math.min(3, base.ts.strength), mission: 'bomb' });
+      cp -= 2;
+    }
   }
   // Intelligence war over the neutral tracks.
   if (cp >= 2 && p.ratings.intel >= 3) {
@@ -269,6 +279,25 @@ export function aiOrders(gameObj, powerId, plan, { coordinated = true } = {}) {
 
 function nearFront(gameObj, powerId, tid, frontline) {
   return gameObj.game.map[tid].adjacent.some(n => frontline.has(n));
+}
+
+function hasDoctrineAI(gameObj, pid, kind) {
+  const { game, state } = gameObj;
+  return state.powers[pid].doctrines.some(id => game.doctrines[id]?.passive.kind === kind);
+}
+
+// An enemy industrial territory within two steps of tid, or null.
+function withinTwo(gameObj, tid, powerId) {
+  const { game, state } = gameObj;
+  const side = sideOfPower(state, powerId);
+  const ring = new Set(game.map[tid].adjacent);
+  for (const n of [...ring]) for (const n2 of game.map[n].adjacent) ring.add(n2);
+  for (const n of ring) {
+    const os = sideOfOwner(state, state.t[n].owner);
+    const hostile = (side === 'axis' && os === 'allied') || (side === 'allied' && os === 'axis');
+    if (hostile && game.map[n].industrial) return n;
+  }
+  return null;
 }
 
 function aiBuilds(gameObj, powerId, orders) {

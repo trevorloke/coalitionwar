@@ -2728,7 +2728,12 @@ function recomputeCorridors(game, state) {
     }
     const listedAtWar = c.powers.filter(p => state.powers[p] && state.powers[p].atWar);
     const need = listedAtWar.length >= 2 ? 2 : 1;
-    const open = !blocked && present.size >= need && state.corridors[cid].forcedClosed === 0;
+    let open = !blocked && present.size >= need && state.corridors[cid].forcedClosed === 0;
+    // The Burma Road is China's lifeline: it needs China's own presence plus
+    // one Western partner — the UK and USA cannot hold it open by themselves.
+    if (cid === 'burma_road' && open && state.powers.china.atWar) {
+      open = present.has('china') && (present.has('uk') || present.has('usa') || listedAtWar.length === 1);
+    }
     state.corridors[cid].open = open;
   }
 }
@@ -2940,7 +2945,7 @@ const STRATEGY_CARDS = [
   "title": "The Parallel War",
   "ops": 3,
   "side": "axis",
-  "text": "Italy gains +2 Command Points this round and places 1 strength in Northern Italy.",
+  "text": "Italy gains +2 Command Points next round and places 1 strength in Northern Italy.",
   "effects": [
    {
     "op": "commandPoints",
@@ -3051,7 +3056,7 @@ const STRATEGY_CARDS = [
   "title": "Maginot Mentality",
   "ops": 2,
   "side": "allied",
-  "text": "Add 1 fort level to Paris. The UK seat loses 1 Command Point this round.",
+  "text": "Add 1 fort level to Paris. The UK seat loses 1 Command Point next round.",
   "effects": [
    {
     "op": "fort",
@@ -3095,7 +3100,7 @@ const STRATEGY_CARDS = [
   "title": "Churchill Takes Office",
   "ops": 3,
   "side": "allied",
-  "text": "UK Home Front +2. UK gains +1 Command Point this round and draws 1 Operations card.",
+  "text": "UK Home Front +2. UK gains +1 Command Point next round and draws 1 Operations card.",
   "effects": [
    {
     "op": "homeFront",
@@ -3215,7 +3220,7 @@ const STRATEGY_CARDS = [
   "id": "early_america_first",
   "title": "America First Committee",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "USA Pressure -2.",
   "effects": [
    {
@@ -3255,7 +3260,7 @@ const STRATEGY_CARDS = [
   "id": "early_winter_war",
   "title": "The Winter War",
   "ops": 3,
-  "side": "neutral",
+  "side": "axis",
   "text": "Remove 2 USSR strength from one territory of the USSR player's choice. Finland Pressure -2; USSR Home Front -1.",
   "effects": [
    {
@@ -3377,7 +3382,7 @@ const STRATEGY_CARDS = [
     "power": "uk",
     "theatre": "atlantic",
     "role": "defense",
-    "delta": 1,
+    "delta": -1,
     "rounds": 1
    }
   ],
@@ -3442,7 +3447,7 @@ const STRATEGY_CARDS = [
   "title": "The Phoney War",
   "ops": 1,
   "side": "neutral",
-  "text": "Germany and the UK each lose 1 Command Point this round.",
+  "text": "Germany and the UK each lose 1 Command Point next round.",
   "effects": [
    {
     "op": "commandPoints",
@@ -3463,7 +3468,7 @@ const STRATEGY_CARDS = [
   "id": "early_swedish_iron_ore",
   "title": "Swedish Iron Ore",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "Germany production +1 for 2 rounds.",
   "effects": [
    {
@@ -3481,7 +3486,7 @@ const STRATEGY_CARDS = [
   "id": "early_hendaye",
   "title": "Franco Demurs at Hendaye",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Add 1 fort level to Gibraltar.",
   "effects": [
    {
@@ -3710,7 +3715,7 @@ const STRATEGY_CARDS = [
   "title": "Case Blue",
   "ops": 4,
   "side": "axis",
-  "text": "The summer offensive drives for the Volga and the Caucasus oil: Germany gains 2 command points this round and German attacks in the Eastern Front hit one better.",
+  "text": "The summer offensive drives for the Volga and the Caucasus oil: Germany gains 2 command points next round and German attacks in the Eastern Front hit one better.",
   "effects": [
    {
     "op": "commandPoints",
@@ -3982,7 +3987,7 @@ const STRATEGY_CARDS = [
   "title": "Tojo Consolidates",
   "ops": 2,
   "side": "axis",
-  "text": "The war cabinet tightens its grip on the ministries and the press: Japanese Home Front +2 and Japan gains 1 command point this round.",
+  "text": "The war cabinet tightens its grip on the ministries and the press: Japanese Home Front +2 and Japan gains 1 command point next round.",
   "effects": [
    {
     "op": "homeFront",
@@ -4035,7 +4040,7 @@ const STRATEGY_CARDS = [
     "power": "uk",
     "theatre": "atlantic",
     "role": "defense",
-    "delta": 1,
+    "delta": -1,
     "rounds": 1
    },
    {
@@ -4058,7 +4063,7 @@ const STRATEGY_CARDS = [
   "id": "mid_occupation_terror",
   "title": "Terror in the Occupied East",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Word of the regime's crimes in the occupied territories spreads across every border: German Home Front −1, and the Allied coalition pool gains 1 as resistance hardens.",
   "effects": [
    {
@@ -4126,7 +4131,7 @@ const STRATEGY_CARDS = [
     "power": "japan",
     "theatre": "seasia",
     "role": "defense",
-    "delta": -1,
+    "delta": 1,
     "rounds": 1
    }
   ],
@@ -4177,7 +4182,7 @@ const STRATEGY_CARDS = [
     "power": "ussr",
     "theatre": "eastern",
     "role": "defense",
-    "delta": 1,
+    "delta": -1,
     "rounds": 1
    },
    {
@@ -4218,7 +4223,7 @@ const STRATEGY_CARDS = [
   "title": "Commando Raids",
   "ops": 2,
   "side": "allied",
-  "text": "Raids from Vaagso to St-Nazaire keep the whole coastline garrisoned: Germany loses 1 command point this round and British Home Front +1.",
+  "text": "Raids from Vaagso to St-Nazaire keep the whole coastline garrisoned: Germany loses 1 command point next round and British Home Front +1.",
   "effects": [
    {
     "op": "commandPoints",
@@ -4315,7 +4320,7 @@ const STRATEGY_CARDS = [
   "id": "mid_finlands_separate_war",
   "title": "Finland's Separate War",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Helsinki insists it fights its own war and halts at the old border while Washington keeps a door open: Finnish Pressure +2.",
   "effects": [
    {
@@ -4454,7 +4459,7 @@ const STRATEGY_CARDS = [
   "id": "mid_swedish_ore",
   "title": "Swedish Iron Ore",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "The ore keeps moving from Kiruna through the Baltic in neutral bottoms: German production +1 for 2 rounds.",
   "effects": [
    {
@@ -4472,7 +4477,7 @@ const STRATEGY_CARDS = [
   "id": "mid_franco_demurs",
   "title": "Franco Demurs",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Madrid names an impossible price for joining the Axis and the Rock is left unmolested: add 1 fort in Gibraltar.",
   "effects": [
    {
@@ -4534,8 +4539,13 @@ const STRATEGY_CARDS = [
   "title": "Overlord",
   "ops": 4,
   "side": "allied",
-  "text": "The Allies land in Normandy: place 3 US and 2 UK strength in Normandy, and Allied offensives in the West hit on 4+ this round.",
+  "text": "The Allies storm ashore and take Normandy: the USA seizes control of it, place 3 US and 2 UK strength there, and Allied offensives in the West hit one better this round.",
   "effects": [
+   {
+    "op": "control",
+    "territory": "normandy",
+    "power": "usa"
+   },
    {
     "op": "placeStrength",
     "power": "usa",
@@ -4566,7 +4576,7 @@ const STRATEGY_CARDS = [
   "title": "Bagration",
   "ops": 4,
   "side": "allied",
-  "text": "Army Group Centre is destroyed: Germany removes 3 strength of its choice, the USSR gains +2 CP, and Soviet offensives in the East hit on 4+ this round.",
+  "text": "Army Group Centre is destroyed: Germany removes 3 strength of its choice, the USSR gains +2 CP next round, and Soviet offensives in the East hit on 4+ this round.",
   "effects": [
    {
     "op": "removeStrength",
@@ -4597,7 +4607,7 @@ const STRATEGY_CARDS = [
   "title": "Market Garden",
   "ops": 3,
   "side": "allied",
-  "text": "A bridge too far: the UK gains +3 CP and its offensives in the West hit on 4+ this round, then loses 2 strength of its choice.",
+  "text": "A bridge too far: the UK gains +3 CP next round and its offensives in the West hit on 4+ this round, then loses 2 strength of its choice.",
   "effects": [
    {
     "op": "commandPoints",
@@ -4712,7 +4722,7 @@ const STRATEGY_CARDS = [
   "title": "Iwo Jima",
   "ops": 3,
   "side": "allied",
-  "text": "The flag rises on Suribachi: US amphibious offensives in the Pacific cost 2 CP instead of 3 this round, and US offensives there hit on 4+.",
+  "text": "The flag rises on Suribachi: US amphibious offensives in the Pacific cost 2 CP less this round (minimum 2), and US offensives there hit on 4+.",
   "effects": [
    {
     "op": "flag",
@@ -4898,7 +4908,7 @@ const STRATEGY_CARDS = [
   "title": "Red Army Logistics",
   "ops": 3,
   "side": "allied",
-  "text": "American trucks and re-gauged rails: Soviet builds cost 1 less production each for two rounds, and the USSR gains +1 CP this round.",
+  "text": "American trucks and re-gauged rails: Soviet builds cost 1 less production each for two rounds, and the USSR gains +1 CP next round.",
   "effects": [
    {
     "op": "flag",
@@ -4921,7 +4931,7 @@ const STRATEGY_CARDS = [
   "title": "Zhukov's Fronts",
   "ops": 4,
   "side": "allied",
-  "text": "Deep Battle comes of age: the USSR gains +2 CP, places 2 strength at an owned industrial city, and Soviet offensives in the East hit on 4+ this round.",
+  "text": "Deep Battle comes of age: the USSR gains +2 CP next round, places 2 strength at an owned industrial city, and Soviet offensives in the East hit on 4+ this round.",
   "effects": [
    {
     "op": "commandPoints",
@@ -5082,7 +5092,7 @@ const STRATEGY_CARDS = [
   "title": "Operation Ichi-Gō",
   "ops": 4,
   "side": "axis",
-  "text": "Japan's largest land offensive lunges for the airfields: Japan gains +2 CP, its offensives in China & Manchuria hit on 4+ this round, and China's Home Front drops 1.",
+  "text": "Japan's largest land offensive lunges for the airfields: Japan gains +2 CP next round, its offensives in China & Manchuria hit on 4+ this round, and China's Home Front drops 1.",
   "effects": [
    {
     "op": "commandPoints",
@@ -5220,7 +5230,7 @@ const STRATEGY_CARDS = [
   "title": "Total War",
   "ops": 3,
   "side": "axis",
-  "text": "'Wollt ihr den totalen Krieg?' Germany gains +2 CP this round, and its Home Front drops 1.",
+  "text": "'Wollt ihr den totalen Krieg?' Germany gains +2 CP next round, and its Home Front drops 1.",
   "effects": [
    {
     "op": "commandPoints",
@@ -5270,7 +5280,7 @@ const STRATEGY_CARDS = [
   "title": "The Warsaw Rising",
   "ops": 3,
   "side": "neutral",
-  "text": "The Home Army rises while the Red Army halts on the Vistula: Germany removes 1 strength from Western Poland, the USSR loses 1 CP, and the Allied coalition pool drops 1.",
+  "text": "The Home Army rises while the Red Army halts on the Vistula: Germany removes 1 strength from Western Poland, the USSR loses 1 CP next round, and the Allied coalition pool drops 1.",
   "effects": [
    {
     "op": "removeStrength",
@@ -5297,8 +5307,8 @@ const STRATEGY_CARDS = [
   "id": "late_valkyrie",
   "title": "Valkyrie",
   "ops": 3,
-  "side": "neutral",
-  "text": "The bomb under the map table fails and the purge begins: Germany's Home Front drops 2 and it loses 2 CP this round.",
+  "side": "allied",
+  "text": "The bomb under the map table fails and the purge begins: Germany's Home Front drops 2 and it loses 2 CP next round.",
   "effects": [
    {
     "op": "homeFront",
@@ -5319,7 +5329,7 @@ const STRATEGY_CARDS = [
   "id": "late_bring_the_boys_home",
   "title": "Bring the Boys Home",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "Six years of war tell on the democracies: the UK's and the USA's Home Fronts each drop 1.",
   "effects": [
    {
@@ -5341,7 +5351,7 @@ const STRATEGY_CARDS = [
   "id": "late_bled_white",
   "title": "Bled White",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "The Axis war economies pass the breaking point: Germany's and Japan's Home Fronts each drop 1.",
   "effects": [
    {
@@ -5460,7 +5470,7 @@ const OPS_CARDS = [
   "powers": "any",
   "text": "In one battle where you defend, the attacker's hit threshold worsens by 1 (a 5+ becomes 6), as if you were entrenched.",
   "effect": {
-   "kind": "entrench_bonus",
+   "kind": "ambush",
    "delta": 1
   }
  },
@@ -5472,7 +5482,7 @@ const OPS_CARDS = [
   "powers": "any",
   "text": "In one battle where you defend, the attacker's hit threshold worsens by 2, as if you were doubly entrenched.",
   "effect": {
-   "kind": "entrench_bonus",
+   "kind": "ambush",
    "delta": 2
   }
  },
@@ -5528,7 +5538,7 @@ const OPS_CARDS = [
   "cost": 1,
   "timing": "orders",
   "powers": "any",
-  "text": "Play during orders, before the reveal: read one line of one opponent's written orders.",
+  "text": "Play during orders: the signals desk pays off — draw 1 operations card at the reveal.",
   "effect": {
    "kind": "intel_peek"
   }
@@ -5567,7 +5577,7 @@ const OPS_CARDS = [
   "effect": {
    "kind": "threshold",
    "role": "attack",
-   "delta": -1
+   "delta": 1
   }
  },
  {
@@ -5580,7 +5590,7 @@ const OPS_CARDS = [
   "effect": {
    "kind": "threshold",
    "role": "defense",
-   "delta": -1
+   "delta": 1
   }
  },
  {
@@ -5609,7 +5619,7 @@ const OPS_CARDS = [
   "effect": {
    "kind": "threshold",
    "role": "attack",
-   "delta": -1
+   "delta": 1
   }
  },
  {
@@ -5651,7 +5661,7 @@ const OPS_CARDS = [
   ],
   "text": "In one battle where you defend, the attacker's hit threshold worsens by 2, as if you were entrenched behind prepared works.",
   "effect": {
-   "kind": "entrench_bonus",
+   "kind": "ambush",
    "delta": 2
   }
  },
@@ -5719,7 +5729,7 @@ const OPS_CARDS = [
   "powers": [
    "usa"
   ],
-  "text": "Play during orders, before the reveal: read one line of one opponent's written orders.",
+  "text": "Play during orders: the signals desk pays off — draw 1 operations card at the reveal.",
   "effect": {
    "kind": "intel_peek"
   }
@@ -6077,6 +6087,8 @@ function createGame(options = {}) {
     pool: { axis: 0, allied: 0 },
     initiative: 'axis',
     commanders: {},
+    commanderSpent: {},
+    bombedThisRound: {},
     activeFlags: [],
     thresholdMods: [],
     corridors: {},
@@ -6132,23 +6144,30 @@ function createGame(options = {}) {
     .filter(([, t]) => t.setup.owner === 'china')
     .map(([tid]) => tid);
 
-  // Doctrine draft: honor explicit picks, else auto-draft the first two eligible.
+  // Doctrine draft: honor explicit picks (max two), then snake-fill so the
+  // seats with the thinnest pools pick first — every power ends with two.
   const picks = options.doctrines ?? {};
   const taken = new Set();
+  const chosenBy = Object.fromEntries(Object.keys(POWERS).map(p => [p, []]));
   for (const pid of Object.keys(POWERS)) {
-    const wanted = picks[pid] ?? [];
-    const eligible = DOCTRINES.filter(d => d.pool.includes(pid));
-    const chosen = [];
-    for (const id of wanted) {
+    for (const id of (picks[pid] ?? []).slice(0, 2)) {
       const d = game.doctrines[id];
-      if (d && d.pool.includes(pid) && !taken.has(id)) { chosen.push(id); taken.add(id); }
+      if (d && d.pool.includes(pid) && !taken.has(id)) { chosenBy[pid].push(id); taken.add(id); }
     }
-    for (const d of eligible) {
-      if (chosen.length >= 2) break;
-      if (!taken.has(d.id)) { chosen.push(d.id); taken.add(d.id); }
-    }
-    state.powers[pid].doctrines = chosen;
   }
+  for (let round = 0; round < 2; round++) {
+    const order = Object.keys(POWERS)
+      .filter(pid => chosenBy[pid].length < 2)
+      .sort((a, b) =>
+        DOCTRINES.filter(d => d.pool.includes(a) && !taken.has(d.id)).length -
+        DOCTRINES.filter(d => d.pool.includes(b) && !taken.has(d.id)).length);
+    for (const pid of order) {
+      if (chosenBy[pid].length >= round + 1) continue;
+      const d = DOCTRINES.find(x => x.pool.includes(pid) && !taken.has(x.id));
+      if (d) { chosenBy[pid].push(d.id); taken.add(d.id); }
+    }
+  }
+  for (const pid of Object.keys(POWERS)) state.powers[pid].doctrines = chosenBy[pid];
 
   recomputeCorridors(game, state);
   traceSupply(game, state);
@@ -6191,7 +6210,25 @@ function powersOf(state, spec) {
   if (spec === 'axis' || spec === 'allied') {
     return Object.values(state.powers).filter(p => p.side === spec && p.atWar).map(p => p.id);
   }
+  // Independent State nations are legal targets: their units carry their own
+  // tag and their seat is the Indies.
+  if (state.nations[spec]) return [spec];
   return state.powers[spec] ? [spec] : [];
+}
+
+function tagsFor(game, state, id) {
+  if (state.nations[id]) return [id];
+  return ownedTagsOf(state, id);
+}
+
+function homeOf(game, state, id) {
+  if (state.nations[id]) {
+    return NATIONS[id].home;
+  }
+  for (const [tid, t] of Object.entries(game.map)) {
+    if (t.capitalOf === id) return tid;
+  }
+  return null;
 }
 
 function clampTrack(v) { return Math.max(0, Math.min(10, v)); }
@@ -6229,20 +6266,35 @@ function applyEffect(game, state, e, ctx = {}) {
     }
     case 'placeStrength': {
       for (const pid of powersOf(state, e.power)) {
+        const tags = tagsFor(game, state, pid);
+        const isNation = !!state.nations[pid];
+        const mySide = isNation ? state.nations[pid].allegiance : state.powers[pid].side;
         let tid = null;
+        let sameSideAdd = false;
         if (e.where === 'owned_industrial') {
-          tid = biggestOwned(game, state, pid, t => game.map[t].industrial);
+          tid = isNation ? null : biggestOwned(game, state, pid, t => game.map[t].industrial);
         } else if (e.where === 'capital') {
-          tid = capitalOf(game, state, pid);
+          tid = homeOf(game, state, pid);
         } else if (state.t[e.where]) {
           const ts = state.t[e.where];
-          const tags = ownedTagsOf(state, pid);
-          if (tags.includes(ts.owner) || ts.owner === 'neutral' || ts.strength === 0) tid = e.where;
+          const whereSide = sideOfOwner(state, ts.owner);
+          if (tags.includes(ts.owner) || ts.owner === 'neutral' || ts.strength === 0) {
+            tid = e.where;
+          } else if (whereSide === mySide) {
+            // Reinforcing an ally's territory: the strength joins the stack
+            // that is already there (Afrika Korps into Italian Libya).
+            tid = e.where;
+            sameSideAdd = true;
+          }
         }
+        if (!tid && isNation) tid = homeOf(game, state, pid);
         if (!tid) tid = biggestOwned(game, state, pid);
         if (!tid) continue;
         const ts = state.t[tid];
-        if (!ownedTagsOf(state, pid).includes(ts.owner)) { ts.owner = pid; ts.fort = 0; }
+        if (!sameSideAdd && !tags.includes(ts.owner)) {
+          ts.owner = isNation ? pid : pid;
+          ts.fort = 0;
+        }
         ts.strength += e.amount;
         log(`${pid} places ${e.amount} strength in ${game.map[tid].name}`);
       }
@@ -6250,10 +6302,19 @@ function applyEffect(game, state, e, ctx = {}) {
     }
     case 'removeStrength': {
       for (const pid of powersOf(state, e.power)) {
+        const tags = tagsFor(game, state, pid);
         let remaining = e.amount;
         while (remaining > 0) {
-          const tid = e.where && e.where !== 'choose' && state.t[e.where] ? e.where
-            : biggestOwned(game, state, pid, (t, ts) => ts.strength > 0);
+          let tid = null;
+          if (e.where && e.where !== 'choose' && state.t[e.where]) {
+            // A named territory only bleeds if the named power's units hold it.
+            tid = tags.includes(state.t[e.where].owner) ? e.where : null;
+          } else {
+            tid = state.nations[pid]
+              ? (state.t[NATIONS[pid].home] && tags.includes(state.t[NATIONS[pid].home].owner)
+                && state.t[NATIONS[pid].home].strength > 0 ? NATIONS[pid].home : null)
+              : biggestOwned(game, state, pid, (t, ts2) => ts2.strength > 0);
+          }
           if (!tid || state.t[tid].strength === 0) break;
           const take = Math.min(remaining, state.t[tid].strength);
           state.t[tid].strength -= take;
@@ -6267,14 +6328,19 @@ function applyEffect(game, state, e, ctx = {}) {
     case 'homeFront': {
       for (const pid of powersOf(state, e.power)) {
         const p = state.powers[pid];
+        if (!p) continue; // nations have pressure tracks, not home fronts
         p.homeFront = clampTrack(p.homeFront + e.delta);
         log(`${pid} home front ${e.delta > 0 ? '+' : ''}${e.delta} → ${p.homeFront}`);
       }
       break;
     }
     case 'commandPoints': {
+      // Events fire after sheets are sealed, so CP from an event pays out on
+      // the NEXT round's budget (a penalty still bites the sealed budget
+      // indirectly by carrying forward too).
       for (const pid of powersOf(state, e.power)) {
-        state.powers[pid].cp = Math.max(0, state.powers[pid].cp + e.delta);
+        const p = state.powers[pid];
+        if (p) p.cpCarry = (p.cpCarry ?? 0) + e.delta;
       }
       break;
     }
@@ -6297,9 +6363,11 @@ function applyEffect(game, state, e, ctx = {}) {
       break;
     case 'drawOps': {
       for (const pid of powersOf(state, e.power)) {
+        if (!state.powers[pid]) continue;
         for (let i = 0; i < e.n; i++) {
           if (!state.decks.ops.length) {
-            state.decks.ops = state.decks.opsDiscard.splice(0);
+            const back = state.decks.opsDiscard.splice(0);
+            state.decks.ops = ctx.rng ? ctx.rng.shuffle(back) : back;
           }
           const c = state.decks.ops.pop();
           if (c) state.powers[pid].opsHand.push(c);
@@ -6345,13 +6413,6 @@ function trackRef(state, track) {
   if (state.nations[track]) {
     const n = state.nations[track];
     return { obj: n, locked: n.pressureLock?.rounds ?? 0 };
-  }
-  return null;
-}
-
-function capitalOf(game, state, pid) {
-  for (const [tid, t] of Object.entries(game.map)) {
-    if (t.capitalOf === pid && ownedTagsOf(state, pid).includes(state.t[tid].owner)) return tid;
   }
   return null;
 }
@@ -6404,7 +6465,7 @@ function orderCost(game, state, powerId, order) {
         c += 2;
         if (hasDoctrine(game, state, powerId, 'amphib')) c -= 1;
         if (powerId === 'usa' && hasFlag(state, 'island_hopping')
-          && game.map[order.target].theatre === 'pacific') c = Math.min(c, 4);
+          && game.map[order.target].theatre === 'pacific') c = Math.max(2, c - 2);
       }
       if (hasFlag(state, 'monsoon')
         && ['seasia', 'china_manchuria'].includes(game.map[order.target]?.theatre)) c += 1;
@@ -6417,7 +6478,7 @@ function orderCost(game, state, powerId, order) {
         && game.map[order.zone]?.theatre === 'med') c += 1;
       return c;
     }
-    case 'entrench': return COSTS.entrench;
+    case 'entrench': return COSTS.entrench + (order.withFort ? 1 : 0);
     case 'strat_card': return 0; // ops value ADDS budget; events are free to declare
     case 'ops_card': return game.opsCards[order.cardId]?.cost ?? 1;
     case 'intel_op': return COSTS.intel_op;
@@ -6434,31 +6495,36 @@ function orderCost(game, state, powerId, order) {
 }
 
 // Validate a sheet, drop what the budget or the rules don't allow.
-// Returns { orders, spent, budget, dropped }.
-function validateSheet(game, state, powerId, sheet) {
+// Returns { orders, spent, budget, dropped }. Pass opts.commit = true only
+// when actually filing the sheet: it records the power's draw on the shared
+// Supreme Commander pots (a dry run for UI costing must not).
+function validateSheet(game, state, powerId, sheet, opts = {}) {
   const p = state.powers[powerId];
   const tags = ownedTagsOf(state, powerId);
   const dropped = [];
   const kept = [];
   let budget = p.cp;
-  let commanderBudget = 0;
-  // Commanders are keyed `${theatre}|${side}`; the office's 3 CP may only be
-  // spent on OTHER powers' orders in that theatre — never your own.
-  const cmdTheatres = Object.entries(state.commanders)
-    .filter(([, c]) => c && c.power !== powerId && c.side === sideOfPower(state, powerId))
-    .map(([key]) => key.split('|')[0]);
-  if (cmdTheatres.length) commanderBudget = 3; // spendable only inside those theatres
-
-  // Strategy cards played for ops add to the budget first.
-  for (const o of sheet.orders) {
-    if (o.type === 'strat_card' && o.forOps && p.stratHand.includes(o.cardId)) {
-      budget += game.cards[o.cardId]?.ops ?? 0;
-    }
+  // Commanders are keyed `${theatre}|${side}`. Each office holds ONE pot of
+  // 3 CP, shared by the side's OTHER powers for orders in that theatre —
+  // never the commander's own.
+  const pots = {};
+  for (const [key, c] of Object.entries(state.commanders)) {
+    if (!c || c.power === powerId || c.side !== sideOfPower(state, powerId)) continue;
+    const used = state.commanderSpent?.[key] ?? {};
+    const usedByOthers = Object.entries(used)
+      .filter(([pid]) => pid !== powerId)
+      .reduce((s, [, n]) => s + n, 0);
+    pots[key] = { theatre: key.split('|')[0], remaining: Math.max(0, 3 - usedByOthers), used: 0 };
   }
+
+  // At most one strategy card per round; only THAT card's ops can fund the
+  // sheet, and only when it is played for ops.
+  const firstStrat = sheet.orders.find(o => o.type === 'strat_card' && p.stratHand.includes(o.cardId));
+  if (firstStrat?.forOps) budget += game.cards[firstStrat.cardId]?.ops ?? 0;
 
   let spent = 0, freeMoveUsed = false; // spent may hold halves (interior lines)
   const committedFrom = {}; // territory -> strength already pledged
-  for (const o of sheet.orders) {
+  for (let o of sheet.orders) {
     const fail = reason => dropped.push({ order: o, reason });
     let cost = orderCost(game, state, powerId, o);
 
@@ -6471,13 +6537,15 @@ function validateSheet(game, state, powerId, sheet) {
       if (o.strength < 1 || o.strength > avail) { fail('not enough strength'); continue; }
       if (!game.map[o.from].adjacent.includes(o.to)) { fail('not adjacent'); continue; }
       const toSide = sideOfOwner(state, to.owner);
-      const mySide = sideOfPower(state, powerId);
-      const friendly = tags.includes(to.owner) || toSide === mySide
+      // A stack's allegiance follows its owner tag (a defected nation fights
+      // for the Allies even though the Indies seat writes its orders).
+      const moveSide = sideOfOwner(state, from.owner);
+      const friendly = to.owner === from.owner || toSide === moveSide
         || (game.map[o.to].type === 'sea' && (to.owner === 'none' || to.strength === 0));
       if (!friendly) { fail('destination not friendly'); continue; }
       if (game.map[o.to].type === 'sea' && game.map[o.from].type === 'land'
         && p.ratings.sea < 2) { fail('no fleet capacity'); continue; }
-      if (!p.atWar && !tags.includes(to.owner) && to.owner !== 'none') { fail('neutral cannot move abroad'); continue; }
+      if (moveSide === 'neutral' && !tags.includes(to.owner) && to.owner !== 'none') { fail('neutral units stay home'); continue; }
       committedFrom[o.from] = (committedFrom[o.from] || 0) + o.strength;
       if (cost === 1 && !freeMoveUsed && hasDoctrine(game, state, powerId, 'move_discount')) {
         freeMoveUsed = true; cost = 0;
@@ -6486,29 +6554,51 @@ function validateSheet(game, state, powerId, sheet) {
       const t = state.t[o.target];
       if (!t) { fail('unknown target'); continue; }
       if (!p.atWar) { fail('neutral cannot attack'); continue; }
-      const targetSide = sideOfOwner(state, t.owner);
-      const mySide = sideOfPower(state, powerId);
-      if (tags.includes(t.owner) || targetSide === mySide) { fail('target friendly'); continue; }
+      if (kept.some(k => k.type === 'offensive' && k.target === o.target)) {
+        fail('already attacking that territory'); continue;
+      }
       let total = 0; let ok = true;
       const maxSources = powerId === 'ussr' ? 2 : 1; // deep battle
       if (!o.sources || o.sources.length < 1 || o.sources.length > maxSources) { fail('bad sources'); continue; }
+      // The offensive's side is its SOURCES' allegiance, so a defected nation
+      // under the Indies seat attacks the Axis, never its new allies.
+      const orderSide = o.sources[0] && state.t[o.sources[0].from]
+        ? sideOfOwner(state, state.t[o.sources[0].from].owner) : 'none';
+      if (orderSide !== 'axis' && orderSide !== 'allied') { fail('those units are not at war'); continue; }
+      const targetSide = sideOfOwner(state, t.owner);
+      if (targetSide === orderSide) { fail('target friendly'); continue; }
       for (const s of o.sources) {
         const st = state.t[s.from];
         if (!st || !tags.includes(st.owner)
-          || (powerId === 'germany' && o.germanClient && st.owner === o.germanClient)) ok = false;
+          || sideOfOwner(state, st.owner) !== orderSide) ok = false;
         else if (s.strength < 1 || s.strength > st.strength - (committedFrom[s.from] || 0)) ok = false;
         else if (!o.amphibious && !game.map[s.from].adjacent.includes(o.target)) ok = false;
         else if (o.amphibious) {
           const via = o.via;
           if (!via || !game.map[via] || game.map[via].type !== 'sea') ok = false;
           else if (!game.map[s.from].adjacent.includes(via) || !game.map[via].adjacent.includes(o.target)) ok = false;
-          else if (enemies(sideOfOwner(state, state.t[via].owner), mySide)) ok = false;
+          else if (enemies(sideOfOwner(state, state.t[via].owner), orderSide)) ok = false;
         }
         total += s.strength;
       }
       if (!ok) { fail('illegal sources'); continue; }
       if (total > MAX_COMMIT_PER_POWER) { fail('over the 8-strength ceiling'); continue; }
       for (const s of o.sources) committedFrom[s.from] = (committedFrom[s.from] || 0) + s.strength;
+      o = { ...o, _side: orderSide };
+    } else if (o.type === 'naval' && o.mission === 'bomb') {
+      // Strategic bombing: needs the doctrine; hits an enemy industrial
+      // territory within two steps of your own ground. Aircraft don't move.
+      if (!hasDoctrine(game, state, powerId, 'bombing')) { fail('no bomber command'); continue; }
+      const t = game.map[o.zone];
+      const ts = state.t[o.zone];
+      if (!t || t.type !== 'land' || !t.industrial) { fail('not an industrial target'); continue; }
+      if (!enemies(sideOfOwner(state, ts.owner), sideOfPower(state, powerId))) { fail('not an enemy target'); continue; }
+      const from = state.t[o.from];
+      if (!from || !tags.includes(from.owner) || from.strength < 1) { fail('no air base'); continue; }
+      const near = game.map[o.from].adjacent.includes(o.zone)
+        || game.map[o.from].adjacent.some(n => game.map[n].adjacent.includes(o.zone));
+      if (!near) { fail('out of bombing range'); continue; }
+      if (o.strength < 1 || o.strength > 4) { fail('1-4 bomber strength'); continue; }
     } else if (o.type === 'naval') {
       const z = game.map[o.zone];
       if (!z || z.type !== 'sea') { fail('not a sea zone'); continue; }
@@ -6520,6 +6610,7 @@ function validateSheet(game, state, powerId, sheet) {
       if (o.strength > p.ratings.sea * 2) { fail('over naval capacity'); continue; }
       if (!p.atWar && o.mission !== 'escort') { fail('neutral fleet stays home'); continue; }
       committedFrom[o.from] = (committedFrom[o.from] || 0) + o.strength;
+      o = { ...o, _side: sideOfOwner(state, from.owner) };
     } else if (o.type === 'entrench') {
       const t = state.t[o.territory];
       if (!t || !tags.includes(t.owner)) { fail('not yours'); continue; }
@@ -6547,10 +6638,17 @@ function validateSheet(game, state, powerId, sheet) {
     } else if (o.type === 'decisive_battle') {
       if (powerId !== 'japan' || p.decisiveUsed) { fail('unavailable'); continue; }
     } else if (o.type === 'initiative_bid') {
+      // Each +1 on the side's initiative roll costs 2 coalition pool.
       const side = sideOfPower(state, powerId);
-      if (o.points < 1 || o.points > state.pool[side]) { fail('pool too small'); continue; }
+      if (o.points < 1 || o.points * 2 > state.pool[side]) { fail('pool too small (2 per point)'); continue; }
+    } else if (o.type === 'pool_resupply') {
+      const side = sideOfPower(state, powerId);
+      const t = state.t[o.territory];
+      if (state.pool[side] < 3) { fail('needs 3 coalition pool'); continue; }
+      if (!t || !tags.includes(t.owner) || !t.supplied) { fail('not a supplied friendly territory'); continue; }
     } else if (o.type === 'enter_war') {
-      if (p.atWar || p.pressure === null || p.pressure < 7) { fail('cannot enter yet'); continue; }
+      const italyEarly = powerId === 'italy' && !p.atWar;
+      if (!italyEarly && (p.atWar || p.pressure === null || p.pressure < 7)) { fail('cannot enter yet'); continue; }
     } else if (o.type === 'defect') {
       const n = state.nations[o.nation];
       if (powerId !== 'indies' || !n || n.allegiance !== 'axis' || n.pressure < 7) { fail('cannot defect'); continue; }
@@ -6559,18 +6657,27 @@ function validateSheet(game, state, powerId, sheet) {
       if (powerId !== 'indies' || !n || n.allegiance !== 'axis') { fail('not a client'); continue; }
     }
 
-    // Budget check: commander budget usable only inside commanded theatres.
+    // Budget check: a commander pot funds only orders inside its theatre.
     // `spent` may carry a half point from interior-lines moves; the budget
     // comparison rounds up so a stray half never buys a full extra order.
     const th = orderTheatre(game, o);
-    let fromCmd = 0;
-    if (cost >= 1 && th && cmdTheatres.includes(th)) fromCmd = Math.min(Math.floor(cost), commanderBudget);
+    let fromCmd = 0, fundingPot = null;
+    if (cost >= 1 && th) {
+      fundingPot = Object.values(pots).find(pot => pot.theatre === th && pot.remaining > 0) ?? null;
+      if (fundingPot) fromCmd = Math.min(Math.floor(cost), fundingPot.remaining);
+    }
     if (Math.ceil(spent + cost - fromCmd) > budget) { fail('over command point budget'); continue; }
-    commanderBudget -= fromCmd;
+    if (fundingPot) { fundingPot.remaining -= fromCmd; fundingPot.used += fromCmd; }
     spent += cost - fromCmd;
     kept.push(o);
   }
   spent = Math.ceil(spent);
+  if (opts.commit) {
+    state.commanderSpent = state.commanderSpent || {};
+    for (const [key, pot] of Object.entries(pots)) {
+      state.commanderSpent[key] = { ...(state.commanderSpent[key] || {}), [powerId]: pot.used };
+    }
+  }
   return { orders: kept, spent, budget, dropped };
 }
 
@@ -6622,12 +6729,12 @@ function reveal(game, state, rng) {
       continue;
     }
     state.roundLog.push(`Event: "${ev.card.title}" (${ev.card.side}) — ${ev.card.text}`);
-    applyEffects(game, state, ev.card.effects, { by: ev.by });
+    applyEffects(game, state, ev.card.effects, { by: ev.by, rng });
     if (ev.card.remove) state.decks.strat.removed.push(ev.card.id);
     else state.decks.strat.discard.push(ev.card.id);
   }
 
-  // 2. Intel ops.
+  // 2. Intel ops, pool spends, and seat specials.
   for (const [pid, sheet] of Object.entries(sheets)) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
@@ -6635,11 +6742,20 @@ function reveal(game, state, rng) {
         const delta = Math.sign(o.delta || 1);
         applyEffects(game, state, [{ op: 'pressure', track: o.track, delta }]);
       } else if (o.type === 'intel_op' && o.kind === 'deception') {
-        state.activeFlags.push({ name: 'deception', rounds: 1, power: pid });
+        // Two rounds: it must still be live when next round's Ultra reads.
+        state.activeFlags.push({ name: 'deception', rounds: 2, power: pid });
       } else if (o.type === 'sell_commitment') {
-        state.powers.indies.cp += 2;
+        state.powers.indies.cpCarry = (state.powers.indies.cpCarry ?? 0) + 2;
         applyEffects(game, state, [{ op: 'pressure', track: o.nation, delta: 1 }]);
-        state.roundLog.push(`Independent States sell ${o.nation}'s commitment for 2 CP`);
+        state.roundLog.push(`Independent States sell ${o.nation}'s commitment for 2 CP (next round)`);
+      } else if (o.type === 'pool_resupply') {
+        const side = sideOfPower(state, pid);
+        const ts = state.t[o.territory];
+        if (state.pool[side] >= 3 && ts && ts.supplied) {
+          state.pool[side] -= 3;
+          ts.strength += 2;
+          state.roundLog.push(`${pid} spends 3 ${side} coalition pool on emergency resupply at ${game.map[o.territory].name}`);
+        }
       } else if (o.type === 'decisive_battle') {
         state.powers.japan.decisiveUsed = true;
         state.decisiveZone = o.zone;
@@ -6649,44 +6765,55 @@ function reveal(game, state, rng) {
   }
 
   // 3. Collect offensives into battles; detect joint orders; pay the pool.
+  // A battle's side is its sources' allegiance (validated per order), and the
+  // joint-order bonus counts DISTINCT powers — a power cannot ally with itself.
   const byTarget = {};
   for (const [pid, sheet] of Object.entries(sheets)) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type !== 'offensive') continue;
-      (byTarget[o.target] = byTarget[o.target] || []).push({ power: pid, order: o });
+      const side = o._side ?? sideOfPower(state, pid);
+      (byTarget[o.target] = byTarget[o.target] || []).push({ power: pid, order: o, side });
     }
   }
   for (const [target, attacks] of Object.entries(byTarget)) {
-    const bySide = { axis: [], allied: [] };
-    for (const a of attacks) bySide[sideOfPower(state, a.power)].push(a);
     for (const side of ['axis', 'allied']) {
-      if (!bySide[side].length) continue;
-      const attackers = bySide[side];
-      if (attackers.length > 1) {
-        state.pool[side] += attackers.length - 1;
+      const attackers = attacks.filter(a => a.side === side);
+      if (!attackers.length) continue;
+      const distinct = new Set(attackers.map(a => a.power)).size;
+      if (distinct > 1) {
+        state.pool[side] += distinct - 1;
         state.roundLog.push(
           `Joint order on ${game.map[target].name}: ${attackers.map(a => a.power).join(' + ')} ` +
-          `(+${attackers.length - 1} ${side} coalition pool)`);
+          `(+${distinct - 1} ${side} coalition pool)`);
       }
       state.battles.push({ kind: 'land', target, side, attackers, opsCards: [] });
+      // Japan striking south ignites the global Pacific war.
+      if (side === 'axis' && attackers.some(a => a.power === 'japan')
+        && ['pacific', 'seasia'].includes(game.map[target].theatre)) {
+        state.japanGlobal = true;
+      }
     }
   }
 
-  // 4. Naval orders become naval battles / escorts / raids.
+  // 4. Naval orders become naval battles / escorts / raids / bombing raids.
   for (const [pid, sheet] of Object.entries(sheets)) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type !== 'naval') continue;
       state.battles.push({
-        kind: 'naval', target: o.zone, side: sideOfPower(state, pid),
-        attackers: [{ power: pid, order: { sources: [{ from: o.from, strength: o.strength }] } }],
+        kind: o.mission === 'bomb' ? 'bomb' : 'naval',
+        target: o.zone, side: o._side ?? sideOfPower(state, pid),
+        attackers: [{ power: pid, order: { sources: o.mission === 'bomb' ? [] : [{ from: o.from, strength: o.strength }] }, dice: o.strength }],
         mission: o.mission ?? 'contest', opsCards: [],
       });
+      if (pid === 'japan' && o.mission !== 'escort'
+        && ['pacific', 'seasia'].includes(game.map[o.zone]?.theatre)) state.japanGlobal = true;
     }
   }
 
-  // 5. Attach declared ops cards to their battles.
+  // 5. Attach declared ops cards to their battles. Battle-free tradecraft
+  // (intel_peek) fires immediately instead.
   for (const [pid, sheet] of Object.entries(sheets)) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
@@ -6695,16 +6822,23 @@ function reveal(game, state, rng) {
       p.opsHand = p.opsHand.filter(c => c !== o.cardId);
       state.decks.opsDiscard.push(o.cardId);
       const card = game.opsCards[o.cardId];
+      if (card.effect.kind === 'intel_peek') {
+        applyEffects(game, state, [{ op: 'drawOps', power: pid, n: 1 }], { rng });
+        state.roundLog.push(`${pid} plays "${card.title}": the signals desk pays off (+1 operations card)`);
+        continue;
+      }
       const battle = state.battles.find(b => b.target === (o.battle ?? ''));
       if (battle) battle.opsCards.push({ power: pid, card });
       else state.roundLog.push(`${pid}'s "${card.title}" finds no battle and is discarded`);
     }
   }
 
-  // 6. Attacking a neutral: pressure to 10, first strike for one round.
+  // 6. Attacking a neutral — on land or at sea: pressure to 10, first strike
+  // for one round (the counter is cleared at the reckoning).
   for (const b of state.battles) {
-    if (b.kind !== 'land') continue;
+    if (b.kind !== 'land' && !(b.kind === 'naval' && b.mission !== 'escort')) continue;
     const owner = state.t[b.target].owner;
+    if (b.kind === 'naval' && state.t[b.target].strength === 0) continue;
     const os = sideOfOwner(state, owner);
     if (os === 'neutral' && (state.powers[owner] || state.nations[owner])) {
       if (state.powers[owner]?.pressure !== null && state.powers[owner]) {
@@ -6721,15 +6855,15 @@ function reveal(game, state, rng) {
 // ——— resolution (phase 4.5) ———
 
 function resolveRound(game, state, rng, options = {}) {
-  // Initiative: d6 per side + pool bids.
+  // Initiative: d6 per side, +1 per 2 coalition pool bid.
   const bids = { axis: 0, allied: 0 };
   for (const [pid, sheet] of Object.entries(state.orders)) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type === 'initiative_bid') {
         const side = sideOfPower(state, pid);
-        const pts = Math.min(o.points, state.pool[side]);
-        state.pool[side] -= pts;
+        const pts = Math.min(o.points, Math.floor(state.pool[side] / 2));
+        state.pool[side] -= pts * 2;
         bids[side] += pts;
       }
     }
@@ -6739,7 +6873,8 @@ function resolveRound(game, state, rng, options = {}) {
   else state.initiative = a > b ? 'axis' : 'allied';
   state.roundLog.push(`Initiative: ${state.initiative} (axis ${a} vs allied ${b})`);
 
-  // Moves execute first (all sides simultaneously).
+  // Moves execute first (all sides simultaneously). A stack keeps its owner
+  // tag: French troops stay French, a defected nation's troops stay its own.
   for (const [pid, sheet] of Object.entries(state.orders)) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
@@ -6748,21 +6883,30 @@ function resolveRound(game, state, rng, options = {}) {
       const amount = Math.min(o.strength, from.strength);
       if (amount <= 0) continue;
       from.strength -= amount;
-      if (to.strength === 0 || to.owner === 'none') { to.owner = ownerTagForMove(state, pid, to.owner); }
+      if (to.strength === 0 || to.owner === 'none') { to.owner = from.owner; }
       to.strength += amount;
       to.entrenched = false;
     }
     for (const o of sheet.orders) {
-      if (o.type === 'entrench') state.t[o.territory].entrenched = true;
+      if (o.type === 'entrench') {
+        state.t[o.territory].entrenched = true;
+        // Fortress engineering: entrenching can also raise a fort (+1 CP,
+        // priced in orderCost via o.withFort).
+        if (o.withFort && hasDoctrine(game, state, pid, 'fortification')) {
+          state.t[o.territory].fort = Math.min(2, state.t[o.territory].fort + 1);
+        }
+      }
     }
   }
 
-  // Commit offensive strength out of its source territories.
+  // Commit offensive strength out of its source territories, remembering
+  // whose flag the force marches under.
   for (const bt of state.battles) {
     for (const at of bt.attackers) {
       at.committed = 0;
       for (const s of at.order.sources) {
         const src = state.t[s.from];
+        if (at.ownerTag === undefined) at.ownerTag = src.owner;
         const take = Math.min(s.strength, src.strength);
         src.strength -= take;
         at.committed += take;
@@ -6771,44 +6915,74 @@ function resolveRound(game, state, rng, options = {}) {
     }
   }
 
-  // The coin: initiative side settles exactly one contested battle without dice.
-  // Each side may pre-declare its choice before any dice; the initiative
-  // holder's declaration is the one that counts.
+  // The coin: initiative side settles exactly one contested battle without
+  // dice. Each side may pre-declare its choice before any dice; the initiative
+  // holder's declaration counts. The flip is marked on ONE battle object, so
+  // two battles over the same territory can never both be coin-settled.
   const coinTarget = options.coinBattleBySide?.[state.initiative]
     ?? options.coinBattle ?? pickCoinBattle(game, state);
   state.coinBattle = coinTarget;
+  const coinBt = state.battles.find(bt => bt.kind === 'land' && bt.target === coinTarget
+    && state.t[bt.target].strength > 0);
+  if (coinBt) coinBt._coin = true;
 
-  // Resolve theatre by theatre, naval first.
+  // Resolve theatre by theatre, naval first (bombing raids after the fleets).
   for (const theatre of THEATRE_ORDER) {
+    const rank = { naval: 0, bomb: 1, land: 2 };
     const here = state.battles
       .filter(bt => game.map[bt.target].theatre === theatre)
-      .sort((x, y) => (x.kind === y.kind ? x.target.localeCompare(y.target) : x.kind === 'naval' ? -1 : 1));
-    for (const bt of here) resolveBattle(game, state, rng, bt, bt.target === coinTarget);
+      .sort((x, y) => (rank[x.kind] - rank[y.kind]) || x.target.localeCompare(y.target));
+    for (const bt of here) {
+      if (bt.kind === 'bomb') resolveBombing(game, state, rng, bt);
+      else resolveBattle(game, state, rng, bt, bt._coin === true);
+    }
   }
 
   traceSupply(game, state);
 }
 
-function ownerTagForMove(state, pid, currentOwner) {
-  // Moving into an empty/none territory claims it for the moving power.
-  return pid;
-}
-
 function pickCoinBattle(game, state) {
-  // Auto policy: the initiative side flips the contested battle where it is the
-  // defender with the worst odds, or its own riskiest attack. Simple heuristic:
-  // biggest battle involving the initiative side as defender.
+  // Auto policy: the initiative side flips the contested battle where it
+  // defends against the worst odds; failing that, the biggest contested
+  // battle on the board — the GDD wants exactly one coin whenever there is
+  // a contested resolution to spend it on.
   let best = null, bestSize = -1;
+  let fallback = null, fallbackSize = -1;
   for (const bt of state.battles) {
-    if (bt.kind !== 'land') continue;
-    const defOwner = state.t[bt.target].owner;
-    const defSide = sideOfOwner(state, defOwner);
+    if (bt.kind !== 'land' || state.t[bt.target].strength === 0) continue;
+    const defSide = sideOfOwner(state, state.t[bt.target].owner);
     const atkStrength = bt.attackers.reduce((s, x) => s + (x.committed || 0), 0);
+    if (atkStrength <= 0) continue;
     if (defSide === state.initiative && atkStrength > bestSize && atkStrength > state.t[bt.target].strength) {
       best = bt.target; bestSize = atkStrength;
     }
+    if (atkStrength > fallbackSize) { fallback = bt.target; fallbackSize = atkStrength; }
   }
-  return best;
+  return best ?? fallback;
+}
+
+function resolveBombing(game, state, rng, bt) {
+  const t = game.map[bt.target];
+  const ts = state.t[bt.target];
+  const raider = bt.attackers[0];
+  const ctrl = controllerOf(state, ts.owner);
+  if (!ctrl || !enemies(sideOfPower(state, raider.power), sideOfOwner(state, ts.owner))) return;
+  let hits = 0;
+  const dice = Math.min(raider.dice ?? 0, 4);
+  for (let i = 0; i < dice; i++) if (rng.d6() >= 5) hits++;
+  const perHit = hasFlag(state, 'strategic_bombing') ? 2 : 1;
+  if (hits > 0) {
+    state.productionDelta[ctrl] = state.productionDelta[ctrl] || [];
+    state.productionDelta[ctrl].push({ delta: -hits * perHit, rounds: 1 });
+    state.bombedThisRound = state.bombedThisRound || {};
+    state.bombedThisRound[bt.target] = true;
+    if (hits >= 2) {
+      state.powers[ctrl].homeFront = Math.max(0, state.powers[ctrl].homeFront - 1);
+    }
+    state.roundLog.push(`${raider.power} bombs ${t.name}: ${ctrl} loses ${hits * perHit} production${hits >= 2 ? ' and 1 home front' : ''}`);
+  } else {
+    state.roundLog.push(`${raider.power}'s bombers miss over ${t.name}`);
+  }
 }
 
 function resolveBattle(game, state, rng, bt, isCoinBattle) {
@@ -6826,54 +7000,97 @@ function resolveBattle(game, state, rng, bt, isCoinBattle) {
     return;
   }
 
-  // Uncontested sea zone: occupy it.
-  if (bt.kind === 'naval' && (ts.strength === 0 || defSide === 'none' || defSide === 'neutral')) {
+  // Uncontested sea zone: occupy it. A NEUTRAL POWER's fleet is not
+  // uncontested — attacking it is Pearl Harbor, and it fights back below.
+  if (bt.kind === 'naval' && (ts.strength === 0 || defSide === 'none')) {
     const lead = bt.attackers[0];
-    ts.owner = lead.power; ts.strength += lead.committed;
+    ts.owner = lead.ownerTag ?? lead.power; ts.strength += lead.committed;
     state.roundLog.push(`${lead.power} ${bt.mission === 'escort' ? 'escorts convoys in' : 'takes station in'} ${t.name}`);
     if (bt.mission === 'raid') resolveConvoyRaid(game, state, rng, bt);
     return;
   }
 
-  // Neutral minor land defends itself; a neutral power's territory defends too.
-  const record = { target: bt.target, name: t.name, kind: bt.kind, attackers: [], result: '' };
-
   if (isCoinBattle) {
+    // The coin, exactly as printed: heads the attack carries, tails the line
+    // holds; the LOSER loses half its strength, rounded up; the winner is
+    // untouched. Nothing modifies it.
     const flip = rng.coin();
     state.coinUsedRound = state.round;
-    const atkStr = totalCommitted, defStr = ts.strength;
+    const defStr = ts.strength;
     if (flip === 'heads') {
-      const survivors = Math.max(1, atkStr - Math.ceil(atkStr / 2));
-      captureTerritory(game, state, bt, survivors);
-      state.roundLog.push(`THE COIN on ${t.name}: heads — the attack carries. ${defOwner} loses the territory.`);
-      addLosses(state, defOwner, defStr);
+      const defLoss = Math.ceil(defStr / 2);
+      addLosses(state, defOwner, defLoss);
+      // The defeated half retreats to an adjacent friendly territory if one
+      // exists; otherwise it is destroyed with the position.
+      const remnant = defStr - defLoss;
+      const haven = game.map[bt.target].adjacent.find(n =>
+        game.map[n].type === 'land' && state.t[n].owner === defOwner);
+      if (remnant > 0 && haven) state.t[haven].strength += remnant;
+      else if (remnant > 0) addLosses(state, defOwner, remnant);
+      ts.strength = 0;
+      captureTerritory(game, state, bt, totalCommitted);
+      state.roundLog.push(`THE COIN on ${t.name}: heads — the attack carries. The defenders lose half and the ground.`);
+      recordBattle(state, bt, 'captured', defOwner);
     } else {
-      ts.strength = Math.max(1, defStr - Math.ceil(defStr / 2));
-      addLosses(state, defOwner, defStr - ts.strength);
       for (const a of bt.attackers) {
         const lost = Math.ceil((a.committed || 0) / 2);
         addLosses(state, a.power, lost);
         a.committed = (a.committed || 0) - lost; // survivors head home
       }
       returnCommitted(game, state, bt);
-      state.roundLog.push(`THE COIN on ${t.name}: tails — the line holds. Both sides bleed.`);
+      state.roundLog.push(`THE COIN on ${t.name}: tails — the line holds. The attackers lose half.`);
+      recordBattle(state, bt, 'held', defOwner);
     }
-    state.battleRecords = state.battleRecords || [];
-    state.battleRecords.push({ ...record, result: flip === 'heads' ? 'captured-by-coin' : 'held-by-coin', side: atkSide });
     return;
   }
 
-  // Dice pools & thresholds.
+  // Ops cards that reshape the battle before any dice.
   const battleCtx = { target: bt.target, attackers: bt.attackers, mods: { attacker: 0, defender: 0 } };
+  let noAdvance = false;
   for (const oc of bt.opsCards) {
     const k = oc.card.effect;
     const ocSide = sideOfPower(state, oc.power);
     if (k.kind === 'ambush' && ocSide === defSide) battleCtx.mods.attacker += k.delta ?? 1;
     if (k.kind === 'entrench_bonus' && ocSide === defSide) battleCtx.mods.defender -= k.delta ?? 1;
     if (k.kind === 'threshold') {
-      if (ocSide === atkSide && k.role === 'attack') battleCtx.mods.attacker -= k.delta;
-      if (ocSide === defSide && k.role === 'defense') battleCtx.mods.defender -= k.delta;
+      // delta > 0 always IMPROVES the card holder's side.
+      const d = Math.abs(k.delta ?? 1);
+      if (ocSide === atkSide && k.role === 'attack') battleCtx.mods.attacker -= d;
+      if (ocSide === defSide && k.role === 'defense') battleCtx.mods.defender -= d;
     }
+    if (k.kind === 'cancel_advance' && ocSide === defSide) noAdvance = true;
+    if (k.kind === 'repair' && ocSide === defSide) {
+      ts.strength += k.strength ?? 1;
+      state.roundLog.push(`${oc.power}'s "${oc.card.title}" patches the line at ${t.name} (+${k.strength ?? 1})`);
+    }
+    if (k.kind === 'exhaust_enemy') {
+      if (ocSide === atkSide) {
+        const take = Math.min(ts.strength, k.strength ?? 1);
+        ts.strength -= take;
+        addLosses(state, defOwner, take);
+        state.roundLog.push(`${oc.power}'s "${oc.card.title}" wears down ${t.name}'s garrison (-${take})`);
+      } else {
+        distributeAttackerLosses(state, bt, k.strength ?? 1);
+      }
+    }
+    if (k.kind === 'retreat' && ocSide === defSide && bt.kind === 'land') {
+      const haven = game.map[bt.target].adjacent.find(n =>
+        game.map[n].type === 'land' && state.t[n].owner === defOwner);
+      if (haven) {
+        state.t[haven].strength += ts.strength;
+        ts.strength = 0;
+        state.roundLog.push(`${oc.power}'s "${oc.card.title}": the garrison of ${t.name} slips away before the blow lands`);
+        captureTerritory(game, state, bt, totalCommitted, { noAdvance });
+        recordBattle(state, bt, 'captured', defOwner);
+        return;
+      }
+    }
+  }
+  if (ts.strength <= 0) {
+    // Pre-battle attrition emptied the position.
+    captureTerritory(game, state, bt, totalCommitted, { noAdvance });
+    recordBattle(state, bt, 'captured', defOwner);
+    return;
   }
   // Card/doctrine threshold modifiers.
   for (const a of bt.attackers) {
@@ -6888,7 +7105,8 @@ function resolveBattle(game, state, rng, bt, isCoinBattle) {
     if (hasDoctrine(game, state, defController, 'threshold', { domain: dom, role: 'defense' })) battleCtx.mods.defender -= 1;
     if (bt.kind === 'naval' && hasDoctrine(game, state, defController, 'convoy_escort')) battleCtx.mods.defender -= 1;
   }
-  if (hasFlag(state, 'winter_freeze') && t.theatre === 'eastern' && atkSide === 'axis') {
+  if (hasFlag(state, 'winter_freeze') && t.theatre === 'eastern') {
+    // The freeze is impartial: any attacker in the East suffers, any defender digs in.
     battleCtx.mods.attacker += 1; battleCtx.mods.defender -= 1;
   }
   if (hasFlag(state, 'fortress_europe') && t.theatre === 'west' && defSide === 'axis') battleCtx.mods.defender -= 1;
@@ -6923,29 +7141,69 @@ function resolveBattle(game, state, rng, bt, isCoinBattle) {
     return hits;
   };
 
-  // First strike: carrier doctrine (naval), Pearl-Harbor-style flags, neutral ambush.
-  const firstStrike = (bt.kind === 'naval'
-    && (bt.attackers.some(x => x.power === 'japan') || hasFlag(state, 'first_strike_pacific')))
-    || bt.attackers.some(x => (state.firstStrike[x.power] || 0) > 0);
+  // Defender dice bonuses mirror the attacker's: U-boat aces and extra-dice
+  // cards fight on the defense too.
+  let defDiceBonus = 0, defExhaustion = 0;
+  if (bt.kind === 'naval' && t.theatre === 'atlantic' && defController) {
+    if (hasFlag(state, 'uboat_surge') && defController === 'germany') defDiceBonus += 2;
+    if (hasDoctrine(game, state, defController, 'sub_war')) defDiceBonus += 1;
+  }
+  for (const oc of bt.opsCards) {
+    if (oc.card.effect.kind === 'extra_dice' && sideOfPower(state, oc.power) === defSide) {
+      defDiceBonus += oc.card.effect.dice; defExhaustion += oc.card.effect.exhaustion ?? 0;
+    }
+  }
 
-  let atkHits = rollPool(atkDice, atkTh);
+  // First strike. Attacker side: Japan's carriers in naval offensives, or the
+  // one-round bonus for jumping a neutral. Defender side: first_strike_pacific
+  // lets Japan strike first even when its fleets are the ones attacked.
+  const atkFirstStrike = (bt.kind === 'naval' && bt.attackers.some(x => x.power === 'japan'))
+    || bt.attackers.some(x => (state.firstStrike[x.power] || 0) > 0);
+  const defFirstStrike = !atkFirstStrike && bt.kind === 'naval'
+    && hasFlag(state, 'first_strike_pacific') && defController === 'japan';
+
+  const rerollFor = (side, naval) => bt.opsCards
+    .filter(oc => sideOfPower(state, oc.power) === side
+      && (oc.card.effect.kind === 'reroll' || (naval && oc.card.effect.kind === 'naval_reroll')))
+    .reduce((s, oc) => s + (oc.card.effect.dice ?? 2), 0);
+
+  let atkDicePool = atkDice;
+  let defStrength = ts.strength;
+  let atkHits, defHits;
+  if (defFirstStrike) {
+    defHits = rollPool(defStrength + defDiceBonus, defTh);
+    atkDicePool = Math.max(0, atkDice - Math.min(totalCommitted, defHits));
+    atkHits = rollPool(atkDicePool, atkTh);
+  } else {
+    atkHits = rollPool(atkDicePool, atkTh);
+  }
+  // Rerolls: throw again for up to N dice that missed.
+  const atkReroll = rerollFor(atkSide, bt.kind === 'naval');
+  if (atkReroll > 0 && atkHits < atkDicePool) {
+    atkHits += rollPool(Math.min(atkReroll, atkDicePool - atkHits), atkTh);
+  }
   // Coalition pool reroll (auto policy): a losing VC attack rerolls once for 2.
   const poolSide = atkSide;
   if (t.victoryCity && atkHits < ts.strength && state.pool[poolSide] >= 4
     && state.poolPolicy?.[poolSide]?.reroll !== false) {
     state.pool[poolSide] -= 2;
-    const re = rollPool(atkDice, atkTh);
+    const re = rollPool(atkDicePool, atkTh);
     if (re > atkHits) atkHits = re;
     state.roundLog.push(`${poolSide} spends 2 coalition pool to reroll the attack on ${t.name}`);
   }
 
-  let defStrength = ts.strength;
-  let defHits;
-  if (firstStrike) {
-    defStrength = Math.max(0, defStrength - atkHits);
-    defHits = rollPool(defStrength, defTh);
-  } else {
-    defHits = rollPool(defStrength, defTh);
+  if (defHits === undefined) {
+    if (atkFirstStrike) defStrength = Math.max(0, defStrength - atkHits);
+    defHits = rollPool(defStrength + (defStrength > 0 ? defDiceBonus : 0), defTh);
+  }
+  const defReroll = rerollFor(defSide, bt.kind === 'naval');
+  if (defReroll > 0 && defHits < defStrength + defDiceBonus) {
+    defHits += rollPool(Math.min(defReroll, defStrength + defDiceBonus - defHits), defTh);
+  }
+  if (defExhaustion) {
+    const take = Math.min(ts.strength, defExhaustion);
+    ts.strength -= take;
+    addLosses(state, defOwner, take);
   }
 
   // Apply losses.
@@ -6960,9 +7218,9 @@ function resolveBattle(game, state, rng, bt, isCoinBattle) {
   const survivors = bt.attackers.reduce((s, a) => s + a.committed, 0);
   const powers = bt.attackers.map(x => x.power).join('+');
   if (ts.strength <= 0 && survivors > 0) {
-    captureTerritory(game, state, bt, survivors);
+    captureTerritory(game, state, bt, survivors, { noAdvance });
     state.roundLog.push(
-      `${powers} take ${t.name} (${atkDice} dice on ${atkTh}+ → ${atkHits} hits; defense ${defHits} hits back)`);
+      `${powers} take ${t.name} (${atkDicePool} dice on ${atkTh}+ → ${atkHits} hits; defense ${defHits} hits back)`);
     recordBattle(state, bt, 'captured', defOwner);
   } else {
     returnCommitted(game, state, bt);
@@ -6970,6 +7228,15 @@ function resolveBattle(game, state, rng, bt, isCoinBattle) {
     state.roundLog.push(
       `${powers} fail before ${t.name} (${atkHits} hits vs ${defStrength ? defHits : 0} back; defender holds)`);
     recordBattle(state, bt, 'held', defOwner);
+  }
+  // Wolf packs slip past the escorts: a convoy strike raids after the battle,
+  // win or lose.
+  if (bt.kind === 'naval') {
+    for (const oc of bt.opsCards) {
+      if (oc.card.effect.kind === 'convoy_strike' && sideOfPower(state, oc.power) === atkSide) {
+        resolveConvoyRaid(game, state, rng, bt, bt.attackers.find(x => x.power === oc.power) ?? bt.attackers[0]);
+      }
+    }
   }
 }
 
@@ -7000,10 +7267,12 @@ function distributeAttackerLosses(state, bt, losses) {
   }
 }
 
-function captureTerritory(game, state, bt, survivors) {
+function captureTerritory(game, state, bt, survivors, opts = {}) {
   const ts = state.t[bt.target];
   const lead = [...bt.attackers].sort((x, y) => y.committed - x.committed)[0];
-  ts.owner = lead.power;
+  // The conquest belongs to the units that made it: a French-sourced attack
+  // plants a French flag, a defected nation's attack plants its own.
+  ts.owner = lead.ownerTag ?? lead.power;
   ts.strength = Math.max(1, lead.committed);
   ts.entrenched = false;
   ts.fort = Math.max(0, ts.fort - 1); // storming damages the works
@@ -7012,17 +7281,31 @@ function captureTerritory(game, state, bt, survivors) {
     if (a === lead) continue;
     returnOne(game, state, a);
   }
-  // Interior lines / storm troops: free advance from an adjacent friendly territory.
+  // Interior lines / storm troops: free advance into the captured territory.
+  // Blitz extends the reach: reinforcements may come from two territories away.
   const adv = lead.power === 'germany' || hasDoctrineSafe(game, state, lead.power, 'extra_advance');
-  if (adv && bt.kind === 'land') {
+  if (adv && bt.kind === 'land' && !opts.noAdvance && !bt.opsCards?.some(oc =>
+    oc.card.effect.kind === 'cancel_advance'
+    && sideOfPower(state, oc.power) !== bt.side)) {
     const tags = ownedTagsOf(state, lead.power);
+    const blitz = lead.power === 'germany' && hasFlag(state, 'blitz_bonus');
+    const reach = new Set(game.map[bt.target].adjacent);
+    if (blitz) {
+      for (const n of [...reach]) {
+        if (tags.includes(state.t[n].owner)) {
+          for (const n2 of game.map[n].adjacent) reach.add(n2);
+        }
+      }
+    }
+    reach.delete(bt.target);
     let bestAdj = null;
-    for (const n of game.map[bt.target].adjacent) {
+    for (const n of reach) {
       const ns = state.t[n];
-      if (tags.includes(ns.owner) && ns.strength > 1 && (!bestAdj || ns.strength > state.t[bestAdj].strength)) bestAdj = n;
+      if (game.map[n].type === 'land' && tags.includes(ns.owner) && ns.strength > 1
+        && (!bestAdj || ns.strength > state.t[bestAdj].strength)) bestAdj = n;
     }
     if (bestAdj) {
-      const mv = Math.min(hasFlag(state, 'blitz_bonus') ? 3 : 2, state.t[bestAdj].strength - 1);
+      const mv = Math.min(2, state.t[bestAdj].strength - 1);
       state.t[bestAdj].strength -= mv;
       ts.strength += mv;
       if (mv > 0) state.roundLog.push(`${lead.power} advances ${mv} strength into ${game.map[bt.target].name}`);
@@ -7039,26 +7322,47 @@ function returnCommitted(game, state, bt) {
 }
 
 function returnOne(game, state, a) {
+  // Survivors march home — unless home fell while they were away. A source
+  // the enemy now holds cannot take them back; they route to an adjacent
+  // friendly territory, or are cut off and lost.
+  const tags = ownedTagsOf(state, a.power);
   let remaining = a.committed || 0;
+  const receive = (tid, n) => { state.t[tid].strength += n; };
   for (const s of a.order.sources) {
     if (remaining <= 0) break;
     const back = Math.min(remaining, s.taken ?? s.strength);
-    state.t[s.from].strength += back;
-    remaining -= back;
+    if (tags.includes(state.t[s.from].owner)) {
+      receive(s.from, back);
+      remaining -= back;
+    } else {
+      const haven = game.map[s.from].adjacent.find(n =>
+        game.map[n].type === 'land' && tags.includes(state.t[n].owner));
+      if (haven) { receive(haven, back); remaining -= back; }
+      else {
+        addLosses(state, a.power, back);
+        remaining -= back;
+        state.roundLog.push(`${a.power}'s force from ${game.map[s.from].name} is cut off and destroyed`);
+      }
+    }
   }
-  // Any overflow (advances etc.) goes to the first source.
-  if (remaining > 0 && a.order.sources[0]) state.t[a.order.sources[0].from].strength += remaining;
+  if (remaining > 0 && a.order.sources[0]) {
+    const first = a.order.sources[0].from;
+    if (tags.includes(state.t[first].owner)) receive(first, remaining);
+    else addLosses(state, a.power, remaining);
+  }
   a.committed = 0;
 }
 
-function resolveConvoyRaid(game, state, rng, bt) {
-  const raider = bt.attackers[0];
+function resolveConvoyRaid(game, state, rng, bt, raiderOverride = null) {
+  const raider = raiderOverride ?? bt.attackers[0];
   const th = 5;
-  let dice = raider.committed;
+  let dice = raider.committed || raider.dice || 0;
   if (hasFlag(state, 'uboat_surge') && raider.power === 'germany') dice += 2;
   let hits = 0;
   for (let i = 0; i < dice; i++) if (rng.d6() >= th) hits++;
-  if (hasFlag(state, 'convoy_raid_double')) hits *= 2;
+  // Condor patrols and their kin double AXIS raiding in the ATLANTIC only.
+  if (hasFlag(state, 'convoy_raid_double') && game.map[bt.target].theatre === 'atlantic'
+    && sideOfPower(state, raider.power) === 'axis') hits *= 2;
   if (hits > 0) {
     const victim = sideOfPower(state, raider.power) === 'axis' ? 'uk' : 'germany';
     state.productionDelta[victim] = state.productionDelta[victim] || [];
@@ -7083,6 +7387,12 @@ const USSR_INDUSTRIAL = ['moscow', 'leningrad', 'stalingrad', 'urals'];
 function reckon(game, state, rng) {
   const log = m => state.roundLog.push(`[reckoning] ${m}`);
 
+  // 0. The one-round first strike for jumping a neutral expires here.
+  for (const k of Object.keys(state.firstStrike)) {
+    state.firstStrike[k] -= 1;
+    if (state.firstStrike[k] <= 0) delete state.firstStrike[k];
+  }
+
   // 1. Partisans: China bleeds Japan for every stolen province; partisan doctrines too.
   let jpHeld = 0;
   for (const tid of state.partisanBase) {
@@ -7094,6 +7404,27 @@ function reckon(game, state, rng) {
   if (partisanHits > 0 && state.powers.china.atWar) {
     bleedPower(game, state, 'japan', partisanHits, 'china_manchuria');
     log(`Chinese partisans cost Japan ${partisanHits} strength`);
+  }
+  // Every other partisan-doctrine holder raises resistance in its side's
+  // occupied ground: the enemy power holding most of it bleeds 1 per round.
+  for (const pid of Object.keys(POWERS)) {
+    if (pid === 'china' || !state.powers[pid].atWar) continue;
+    if (!hasDoctrine(game, state, pid, 'partisans')) continue;
+    const side = state.powers[pid].side;
+    const counts = {};
+    for (const [tid, t] of Object.entries(game.map)) {
+      const setupSide = t.setup.owner === 'france' ? 'allied'
+        : state.powers[t.setup.owner] ? state.powers[t.setup.owner].side
+          : state.nations[t.setup.owner] ? state.nations[t.setup.owner].allegiance : null;
+      if (setupSide !== side) continue;
+      const holder = controllerOf(state, state.t[tid].owner);
+      if (holder && state.powers[holder].side !== side) counts[holder] = (counts[holder] || 0) + 1;
+    }
+    const worst = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (worst && worst[1] >= 2) {
+      bleedPower(game, state, worst[0], 1, null);
+      log(`${pid}'s partisans cost ${worst[0]} 1 strength in the occupied lands`);
+    }
   }
 
   // 2. Out-of-supply attrition.
@@ -7148,6 +7479,10 @@ function reckon(game, state, rng) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type !== 'lend_lease') continue;
+      if (hasFlag(state, 'no_lend_lease')) {
+        log(`${pid} lend-lease to ${o.to} is blocked this round`);
+        continue;
+      }
       if (!lendLeaseRouteOpen(game, state, pid, o.to)) {
         log(`${pid} lend-lease to ${o.to} fails: no open route`);
         continue;
@@ -7165,8 +7500,12 @@ function reckon(game, state, rng) {
   for (const [pid, sheet] of Object.entries(state.orders)) {
     if (!sheet) continue;
     const p = state.powers[pid];
+    const tags = ownedTagsOf(state, pid);
     for (const o of sheet.orders) {
       if (o.type !== 'build') continue;
+      // The site may have fallen since the order was written; no power pays
+      // to reinforce the enemy garrison standing in its factory.
+      if (!tags.includes(state.t[o.territory].owner) || !state.t[o.territory].supplied) continue;
       const perStrength = p.ratings.manpower >= 3 ? BUILD_COSTS.strength : BUILD_COSTS.strength_low_manpower;
       let unitCost = o.what === 'fort' ? BUILD_COSTS.fort : o.what === 'ship' ? BUILD_COSTS.ship : perStrength;
       if (hasFlag(state, 'war_production', pid)) unitCost = Math.max(1, unitCost - 1);
@@ -7227,7 +7566,12 @@ function reckon(game, state, rng) {
     })) delta -= 1;
     p.homeFront = Math.max(0, Math.min(10, p.homeFront + delta));
     if (delta !== 0) log(`${pid} home front ${delta > 0 ? '+' : ''}${delta} → ${p.homeFront}`);
-    p.forcedNegotiation = p.homeFront === 0 && pid !== 'italy';
+    // Forced negotiation begins at zero and only lifts once Home Front
+    // recovers to 2 (Italy flips instead of negotiating).
+    if (pid !== 'italy') {
+      if (p.homeFront === 0) p.forcedNegotiation = true;
+      else if (p.homeFront >= 2) p.forcedNegotiation = false;
+    }
   }
 
   // 8. Seat changes: Italy flips, France falls.
@@ -7246,7 +7590,7 @@ function reckon(game, state, rng) {
     if (!sheet) continue;
     for (const o of sheet.orders) {
       if (o.type === 'defect' && state.nations[o.nation]?.pressure >= 7) defectNation(game, state, o.nation, log);
-      if (o.type === 'enter_war') tryEnter(game, state, pid, log);
+      if (o.type === 'enter_war') tryEnter(game, state, pid, log, rng);
     }
   }
   for (const [nid, n] of Object.entries(state.nations)) {
@@ -7270,13 +7614,13 @@ function reckon(game, state, rng) {
     log('Italy declares war — the Mediterranean ignites');
   }
 
-  // 11. Flags, mods, corridor force-closures tick down.
+  // 11. Flags, mods, corridor force-closures, pressure locks tick down.
   for (const f of state.activeFlags) f.rounds--;
   state.activeFlags = state.activeFlags.filter(f => f.rounds > 0);
   for (const m of state.thresholdMods) m.rounds--;
   state.thresholdMods = state.thresholdMods.filter(m => m.rounds > 0);
   for (const c of Object.values(state.corridors)) if (c.forcedClosed > 0) c.forcedClosed--;
-  for (const p of Object.values(state.powers)) {
+  for (const p of [...Object.values(state.powers), ...Object.values(state.nations)]) {
     if (p.pressureLock?.rounds > 0) {
       p.pressureLock.rounds--;
       if (p.pressureLock.rounds === 0) {
@@ -7303,6 +7647,8 @@ function reckon(game, state, rng) {
   state.orders = {};
   state.commits = {};
   state.commanders = {};
+  state.commanderSpent = {};
+  state.bombedThisRound = {};
   state.decisiveZone = null;
   state.gameLog.push(...state.roundLog);
   state.roundLog = [];
@@ -7310,7 +7656,13 @@ function reckon(game, state, rng) {
     state.round += 1;
     state.phase = 'intel';
     for (const pid of Object.keys(POWERS)) {
-      state.powers[pid].cp = computeCP(game, state, pid);
+      const p = state.powers[pid];
+      const tags = ownedTagsOf(state, pid);
+      const holdsLand = Object.entries(state.t).some(([tid, ts]) =>
+        game.map[tid].type === 'land' && tags.includes(ts.owner));
+      // A power driven from every territory has nothing left to command.
+      p.cp = holdsLand ? Math.max(1, computeCP(game, state, pid) + (p.cpCarry ?? 0)) : 0;
+      p.cpCarry = 0;
     }
   }
 }
@@ -7391,9 +7743,20 @@ function defectNation(game, state, nid, log) {
   log(`${NATIONS[nid].name.toUpperCase()} DEFECTS to the Allies`);
 }
 
-function tryEnter(game, state, pid, log) {
+function tryEnter(game, state, pid, log, rng) {
   const p = state.powers[pid];
-  if (!p.atWar && (p.pressure ?? 0) >= 7) enterWar(game, state, pid, log);
+  if (p.atWar) return;
+  // Italy may choose war from round 1; the GDD's entersRound is only a floor
+  // for the AI's patience.
+  if (pid === 'italy') { enterWar(game, state, pid, log); return; }
+  if (p.pressure === null) return;
+  // Exactly on the threshold, the coin decides the cabinet vote (GDD §06).
+  if (p.pressure === 7 && rng) {
+    if (rng.coin() === 'heads') enterWar(game, state, pid, log);
+    else log(`${POWERS[pid].name} wavers at the brink — the vote fails`);
+  } else if (p.pressure >= 7) {
+    enterWar(game, state, pid, log);
+  }
 }
 
 function enterWar(game, state, pid, log) {
@@ -7422,7 +7785,7 @@ function advancePressure(game, state) {
   drift('usa', 4);
   // Client nations feel the Red Army coming, and abandon a failing Reich.
   for (const [nid, n] of Object.entries(state.nations)) {
-    if (n.allegiance !== 'axis') continue;
+    if (n.allegiance !== 'axis' || n.pressureLock) continue;
     const home = NATIONS[nid].home;
     let d = 0;
     if (game.map[home].adjacent.some(t =>
@@ -7437,12 +7800,15 @@ function scoreObjectives(game, state) {
   const held = (tid, side) => sideOfOwner(state, state.t[tid].owner) === side;
   const ownerIs = (tid, tags) => tags.includes(state.t[tid].owner);
 
-  // UK: corridors open + home islands, tracked as good rounds.
+  // UK: corridors open + home islands. Two honors, both live from mid-war so
+  // an early victory still credits them.
   const ukGood = state.corridors.gib_suez.open && state.t.britain.owner === 'uk'
     && ['north_atlantic', 'mid_atlantic', 'western_approaches']
       .filter(z => sideOfOwner(state, state.t[z].owner) === 'axis').length <= 1;
-  state.powers.uk.objectivesMet.goodRounds = (state.powers.uk.objectivesMet.goodRounds || 0) + (ukGood ? 1 : 0);
-  if (state.round >= 12) met('uk', 'lifelines', state.powers.uk.objectivesMet.goodRounds >= 8 && state.t.britain.owner === 'uk');
+  const goodRounds = (state.powers.uk._goodRounds || 0) + (ukGood ? 1 : 0);
+  state.powers.uk._goodRounds = goodRounds;
+  met('uk', 'lifelines', state.round >= 4 && goodRounds >= Math.ceil(state.round * 2 / 3));
+  met('uk', 'hold_home_islands', state.t.britain.owner === 'uk');
 
   // China: survive at Chongqing; tie down Japan from 1942.
   met('china', 'hold_chongqing', state.t.chongqing.owner === 'china');
@@ -7450,17 +7816,18 @@ function scoreObjectives(game, state) {
     const jp = Object.entries(state.t)
       .filter(([tid, ts]) => ts.owner === 'japan' && game.map[tid].theatre === 'china_manchuria')
       .reduce((s, [, ts]) => s + ts.strength, 0);
-    const prev = state.powers.china.objectivesMet.tieRounds || 0;
-    state.powers.china.objectivesMet.tieRounds = prev + (jp >= 8 ? 1 : 0);
-    met('china', 'tie_down_japan', state.powers.china.objectivesMet.tieRounds >= 4);
+    const prev = state.powers.china._tieRounds || 0;
+    state.powers.china._tieRounds = prev + (jp >= 8 ? 1 : 0);
+    met('china', 'tie_down_japan', state.powers.china._tieRounds >= 4);
   }
 
-  // USSR: Moscow & Baku through 1942 (round 7); reach the Vistula.
+  // USSR: Moscow & Baku through 1942 (round 7); reach the Vistula (Warsaw —
+  // Western Poland; owning your own 1939 border zone does not count).
   if (state.round <= 7 && (state.t.moscow.owner !== 'ussr' || state.t.baku.owner !== 'ussr')) {
-    state.powers.ussr.objectivesMet.lostCore = true;
+    state.powers.ussr._lostCore = true;
   }
-  if (state.round >= 7) met('ussr', 'hold_core_1942', !state.powers.ussr.objectivesMet.lostCore);
-  met('ussr', 'reach_vistula', state.t.w_poland.owner === 'ussr' || state.t.e_poland.owner === 'ussr');
+  if (state.round >= 7) met('ussr', 'hold_core_1942', !state.powers.ussr._lostCore);
+  met('ussr', 'reach_vistula', state.t.w_poland.owner === 'ussr');
 
   // USA: Rhine and two island chains.
   met('usa', 'reach_rhine', ['rhineland', 'ruhr'].some(t => state.t[t].owner === 'usa'));
@@ -7472,13 +7839,15 @@ function scoreObjectives(game, state) {
   if (held('paris', 'axis')) met('germany', 'take_paris');
   if (held('moscow', 'axis')) met('germany', 'take_moscow');
   if (held('baku', 'axis')) met('germany', 'take_baku');
-  met('germany', 'protect_ruhr', held('ruhr', 'axis'));
+  // Germany's Ruhr objective also demands it stays out of bombing range.
+  if (state.bombedThisRound?.ruhr) state.powers.germany._ruhrBombed = true;
+  met('germany', 'protect_ruhr', held('ruhr', 'axis') && !state.powers.germany._ruhrBombed);
 
   // Japan: southern resources; closed perimeter by end of 1943 (round 9).
   const resources = ['dei', 'malaya'].every(t => state.t[t].owner === 'japan');
-  const prevRes = state.powers.japan.objectivesMet.resRounds || 0;
-  state.powers.japan.objectivesMet.resRounds = resources ? prevRes + 1 : 0;
-  if (state.powers.japan.objectivesMet.resRounds >= 2) met('japan', 'southern_resources');
+  const prevRes = state.powers.japan._resRounds || 0;
+  state.powers.japan._resRounds = resources ? prevRes + 1 : 0;
+  if (state.powers.japan._resRounds >= 2) met('japan', 'southern_resources');
   if (state.round === 9) {
     const perimeter = ['philippines', 'dei', 'malaya', 'burma', 'solomons', 'new_guinea', 'marianas']
       .filter(t => state.t[t].owner === 'japan').length;
@@ -7488,16 +7857,18 @@ function scoreObjectives(game, state) {
   // Italy: Malta + Suez + the African coast, two consecutive rounds.
   const coast = ['malta', 'egypt', 'tunisia', 'tripolitania', 'cyrenaica']
     .every(t => held(t, 'axis'));
-  const prevMare = state.powers.italy.objectivesMet.mareRounds || 0;
-  state.powers.italy.objectivesMet.mareRounds = coast ? prevMare + 1 : 0;
-  if (state.powers.italy.objectivesMet.mareRounds >= 2) met('italy', 'mare_nostrum_hold');
+  const prevMare = state.powers.italy._mareRounds || 0;
+  state.powers.italy._mareRounds = coast ? prevMare + 1 : 0;
+  if (state.powers.italy._mareRounds >= 2) met('italy', 'mare_nostrum_hold');
 
-  // Independent States: sovereign nations at the end.
-  if (state.round >= 12) {
-    const sovereign = Object.entries(state.nations)
-      .filter(([nid, n]) => n.sovereign && ownerIs(NATIONS[nid].home, [nid])).length;
-    state.powers.indies.objectivesMet.sovereign = sovereign;
-  }
+  // Independent States: sovereignty is worth honors on any ending — a
+  // majority of nations still holding their own capitals is one, all but one
+  // is a second.
+  const sovereign = Object.entries(state.nations)
+    .filter(([nid, n]) => n.sovereign && ownerIs(NATIONS[nid].home, [nid])).length;
+  state.powers.indies._sovereignCount = sovereign;
+  met('indies', 'sovereign_majority', sovereign >= 4);
+  met('indies', 'sovereign_nearly_all', sovereign >= 6);
 
   // Honors = objectives currently satisfied (booleans only).
   for (const p of Object.values(state.powers)) {
@@ -7654,6 +8025,7 @@ class Coalition1939 {
       const side = sideOfPower(s, pick.power);
       const active = powersActiveInTheatre(this.game, s, theatre, side);
       if (!active.includes(pick.power)) continue;
+      if (s.commanders[`${theatre}|${side}`]) continue; // one election per office
       s.commanders[`${theatre}|${side}`] = { power: pick.power, side };
       if (active.length >= 3) {
         s.pool[side] += 2;
@@ -7674,7 +8046,7 @@ class Coalition1939 {
   submitOrders(powerId, sheet) {
     const s = this.state;
     if (s.phase !== 'orders') throw new Error('not the orders phase');
-    const v = validateSheet(this.game, s, powerId, sheet);
+    const v = validateSheet(this.game, s, powerId, sheet, { commit: true });
     s.orders[powerId] = { power: powerId, orders: v.orders, spent: v.spent, dropped: v.dropped };
     return v;
   }
@@ -7972,8 +8344,18 @@ function aiOrders(gameObj, powerId, plan, { coordinated = true } = {}) {
     if (naval) orders.push({ type: 'decisive_battle', zone: naval.zone });
   }
   const side = sideOfPower(state, powerId);
-  if (coordinated && state.pool[side] >= 3 && p.ratings.intel >= 3) {
-    orders.push({ type: 'initiative_bid', points: 1 });
+  if (coordinated && state.pool[side] >= 4 && p.ratings.intel >= 3) {
+    orders.push({ type: 'initiative_bid', points: 1 }); // costs 2 pool
+  }
+  // Bomber command works the Ruhr (or any enemy industry in reach).
+  if (hasDoctrineAI(gameObj, powerId, 'bombing') && cp >= 2) {
+    const base = stacksOf(gameObj, powerId).find(({ tid, ts }) => ts.strength >= 1
+      && withinTwo(gameObj, tid, powerId));
+    if (base) {
+      const target = withinTwo(gameObj, base.tid, powerId);
+      orders.push({ type: 'naval', zone: target, from: base.tid, strength: Math.min(3, base.ts.strength), mission: 'bomb' });
+      cp -= 2;
+    }
   }
   // Intelligence war over the neutral tracks.
   if (cp >= 2 && p.ratings.intel >= 3) {
@@ -7992,6 +8374,25 @@ function aiOrders(gameObj, powerId, plan, { coordinated = true } = {}) {
 
 function nearFront(gameObj, powerId, tid, frontline) {
   return gameObj.game.map[tid].adjacent.some(n => frontline.has(n));
+}
+
+function hasDoctrineAI(gameObj, pid, kind) {
+  const { game, state } = gameObj;
+  return state.powers[pid].doctrines.some(id => game.doctrines[id]?.passive.kind === kind);
+}
+
+// An enemy industrial territory within two steps of tid, or null.
+function withinTwo(gameObj, tid, powerId) {
+  const { game, state } = gameObj;
+  const side = sideOfPower(state, powerId);
+  const ring = new Set(game.map[tid].adjacent);
+  for (const n of [...ring]) for (const n2 of game.map[n].adjacent) ring.add(n2);
+  for (const n of ring) {
+    const os = sideOfOwner(state, state.t[n].owner);
+    const hostile = (side === 'axis' && os === 'allied') || (side === 'allied' && os === 'axis');
+    if (hostile && game.map[n].industrial) return n;
+  }
+  return null;
 }
 
 function aiBuilds(gameObj, powerId, orders) {
@@ -8558,9 +8959,11 @@ function showPlayerAid() {
   Intel op 2 · Lend-lease 1 (USA free) · Build costs production.</p>
   <p><strong>Coalition pool.</strong> Earn: +1 per extra power in a joint order, +1 per
   lend-lease, +2 per Supreme Commander elected in a 3-power theatre.
-  Spend: 2 reroll · 2 initiative · 3 emergency resupply · 4 cancel an event.</p>
+  Spend: 2 reroll a battle · 2 per +1 on the initiative roll · 3 emergency resupply ·
+  4 cancel an event.</p>
   <p><strong>The coin.</strong> Once per round the initiative holder picks one contested
-  battle: it is settled by coin flip. Nothing modifies it.</p>
+  battle: a coin settles it. Heads the attack carries; tails the line holds. The loser
+  loses half, the winner is untouched, and nothing modifies it.</p>
   <p><strong>Victory.</strong> Hold every enemy capital, outscore at summer 1945 (margin
   under 5 is a contested peace), or break the enemy's Home Front.</p>
   <p style="border-top:1px solid var(--line);padding-top:8px"><strong>Winners rank by
@@ -8964,7 +9367,8 @@ function specialButtons(pid) {
     }
   }
   const side = sideOfPower(s, pid);
-  if (s.pool[side] > 0) b.push(`<button data-special="bid" style="font-size:11px">Bid initiative (pool)</button>`);
+  if (s.pool[side] >= 2) b.push(`<button data-special="bid" style="font-size:11px">Bid initiative (2 pool per +1)</button>`);
+  if (s.pool[side] >= 3) b.push(`<button data-special="resupply" style="font-size:11px">Emergency resupply (3 pool)</button>`);
   return b.join('');
 }
 
@@ -8985,9 +9389,12 @@ function startSpecial(kind) {
       nid => { app.draft.push({ type: 'defect', nation: nid }); refresh(); });
   } else if (kind === 'bid') {
     const side = sideOfPower(s, pid);
-    pickModal(`Spend how much of the ${side} pool on initiative?`,
-      Array.from({ length: Math.min(4, s.pool[side]) }, (_, i) => String(i + 1)),
+    pickModal(`How many +1s on the ${side} initiative roll? (2 pool each)`,
+      Array.from({ length: Math.min(3, Math.floor(s.pool[side] / 2)) }, (_, i) => String(i + 1)),
       n => { app.draft.push({ type: 'initiative_bid', points: parseInt(n, 10) }); refresh(); });
+  } else if (kind === 'resupply') {
+    app.pending = { type: 'pool_resupply', step: 'territory' };
+    $('#map-hint').textContent = 'Click the supplied friendly territory to resupply (+2 strength, 3 pool).';
   }
 }
 
@@ -9044,6 +9451,10 @@ function onTerritoryClick(tid) {
     app.draft.push({ type: 'decisive_battle', zone: tid });
     app.pending = null; refresh(); return;
   }
+  if (p.type === 'pool_resupply') {
+    app.draft.push({ type: 'pool_resupply', territory: tid });
+    app.pending = null; refresh(); return;
+  }
   if (p.step === 'source') {
     if (p.type === 'entrench') { app.draft.push({ type: 'entrench', territory: tid }); app.pending = null; refresh(); return; }
     if (p.type === 'build') {
@@ -9085,7 +9496,11 @@ function onTerritoryClick(tid) {
           });
         }
       } else if (p.type === 'naval') {
-        pickModal('Mission?', ['contest', 'escort', 'raid'], mission => {
+        const missions = ['contest', 'escort', 'raid'];
+        if (s.powers[app.current].doctrines.some(d => g.game.doctrines[d]?.passive.kind === 'bombing')) {
+          missions.push('bomb');
+        }
+        pickModal('Mission?', missions, mission => {
           app.draft.push({ type: 'naval', zone: tid, from: p.source, strength: n, mission });
           refresh();
         });

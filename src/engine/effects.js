@@ -9,7 +9,25 @@ function powersOf(state, spec) {
   if (spec === 'axis' || spec === 'allied') {
     return Object.values(state.powers).filter(p => p.side === spec && p.atWar).map(p => p.id);
   }
+  // Independent State nations are legal targets: their units carry their own
+  // tag and their seat is the Indies.
+  if (state.nations[spec]) return [spec];
   return state.powers[spec] ? [spec] : [];
+}
+
+function tagsFor(game, state, id) {
+  if (state.nations[id]) return [id];
+  return ownedTagsOf(state, id);
+}
+
+function homeOf(game, state, id) {
+  if (state.nations[id]) {
+    return NATIONS[id].home;
+  }
+  for (const [tid, t] of Object.entries(game.map)) {
+    if (t.capitalOf === id) return tid;
+  }
+  return null;
 }
 
 function clampTrack(v) { return Math.max(0, Math.min(10, v)); }
@@ -47,20 +65,35 @@ export function applyEffect(game, state, e, ctx = {}) {
     }
     case 'placeStrength': {
       for (const pid of powersOf(state, e.power)) {
+        const tags = tagsFor(game, state, pid);
+        const isNation = !!state.nations[pid];
+        const mySide = isNation ? state.nations[pid].allegiance : state.powers[pid].side;
         let tid = null;
+        let sameSideAdd = false;
         if (e.where === 'owned_industrial') {
-          tid = biggestOwned(game, state, pid, t => game.map[t].industrial);
+          tid = isNation ? null : biggestOwned(game, state, pid, t => game.map[t].industrial);
         } else if (e.where === 'capital') {
-          tid = capitalOf(game, state, pid);
+          tid = homeOf(game, state, pid);
         } else if (state.t[e.where]) {
           const ts = state.t[e.where];
-          const tags = ownedTagsOf(state, pid);
-          if (tags.includes(ts.owner) || ts.owner === 'neutral' || ts.strength === 0) tid = e.where;
+          const whereSide = sideOfOwner(state, ts.owner);
+          if (tags.includes(ts.owner) || ts.owner === 'neutral' || ts.strength === 0) {
+            tid = e.where;
+          } else if (whereSide === mySide) {
+            // Reinforcing an ally's territory: the strength joins the stack
+            // that is already there (Afrika Korps into Italian Libya).
+            tid = e.where;
+            sameSideAdd = true;
+          }
         }
+        if (!tid && isNation) tid = homeOf(game, state, pid);
         if (!tid) tid = biggestOwned(game, state, pid);
         if (!tid) continue;
         const ts = state.t[tid];
-        if (!ownedTagsOf(state, pid).includes(ts.owner)) { ts.owner = pid; ts.fort = 0; }
+        if (!sameSideAdd && !tags.includes(ts.owner)) {
+          ts.owner = isNation ? pid : pid;
+          ts.fort = 0;
+        }
         ts.strength += e.amount;
         log(`${pid} places ${e.amount} strength in ${game.map[tid].name}`);
       }
@@ -68,10 +101,19 @@ export function applyEffect(game, state, e, ctx = {}) {
     }
     case 'removeStrength': {
       for (const pid of powersOf(state, e.power)) {
+        const tags = tagsFor(game, state, pid);
         let remaining = e.amount;
         while (remaining > 0) {
-          const tid = e.where && e.where !== 'choose' && state.t[e.where] ? e.where
-            : biggestOwned(game, state, pid, (t, ts) => ts.strength > 0);
+          let tid = null;
+          if (e.where && e.where !== 'choose' && state.t[e.where]) {
+            // A named territory only bleeds if the named power's units hold it.
+            tid = tags.includes(state.t[e.where].owner) ? e.where : null;
+          } else {
+            tid = state.nations[pid]
+              ? (state.t[NATIONS[pid].home] && tags.includes(state.t[NATIONS[pid].home].owner)
+                && state.t[NATIONS[pid].home].strength > 0 ? NATIONS[pid].home : null)
+              : biggestOwned(game, state, pid, (t, ts2) => ts2.strength > 0);
+          }
           if (!tid || state.t[tid].strength === 0) break;
           const take = Math.min(remaining, state.t[tid].strength);
           state.t[tid].strength -= take;
@@ -85,6 +127,7 @@ export function applyEffect(game, state, e, ctx = {}) {
     case 'homeFront': {
       for (const pid of powersOf(state, e.power)) {
         const p = state.powers[pid];
+        if (!p) continue; // nations have pressure tracks, not home fronts
         p.homeFront = clampTrack(p.homeFront + e.delta);
         log(`${pid} home front ${e.delta > 0 ? '+' : ''}${e.delta} → ${p.homeFront}`);
       }
@@ -96,7 +139,7 @@ export function applyEffect(game, state, e, ctx = {}) {
       // indirectly by carrying forward too).
       for (const pid of powersOf(state, e.power)) {
         const p = state.powers[pid];
-        p.cpCarry = (p.cpCarry ?? 0) + e.delta;
+        if (p) p.cpCarry = (p.cpCarry ?? 0) + e.delta;
       }
       break;
     }
@@ -119,9 +162,11 @@ export function applyEffect(game, state, e, ctx = {}) {
       break;
     case 'drawOps': {
       for (const pid of powersOf(state, e.power)) {
+        if (!state.powers[pid]) continue;
         for (let i = 0; i < e.n; i++) {
           if (!state.decks.ops.length) {
-            state.decks.ops = state.decks.opsDiscard.splice(0);
+            const back = state.decks.opsDiscard.splice(0);
+            state.decks.ops = ctx.rng ? ctx.rng.shuffle(back) : back;
           }
           const c = state.decks.ops.pop();
           if (c) state.powers[pid].opsHand.push(c);
@@ -167,13 +212,6 @@ function trackRef(state, track) {
   if (state.nations[track]) {
     const n = state.nations[track];
     return { obj: n, locked: n.pressureLock?.rounds ?? 0 };
-  }
-  return null;
-}
-
-function capitalOf(game, state, pid) {
-  for (const [tid, t] of Object.entries(game.map)) {
-    if (t.capitalOf === pid && ownedTagsOf(state, pid).includes(state.t[tid].owner)) return tid;
   }
   return null;
 }

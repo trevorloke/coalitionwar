@@ -80,8 +80,8 @@ against its command-point budget:
 |---|---|---|
 | Move | 1 | Between adjacent friendly territories. German west↔east moves cost ½. |
 | Offensive | 3 | One adjacent territory; **max 8 strength per power**. USSR may use two source territories. Amphibious: +2 CP, via a friendly/empty sea zone (−1 with Amphibious Command). |
-| Naval operation | 2 | Contest, escort, or raid a sea zone; dice capped at 2×sea rating. Free for Italy in the Med. |
-| Entrench | 1 | Defender threshold −1 this round. Needs supply. |
+| Naval operation | 2 | Contest, escort, or raid a sea zone; dice capped at 2×sea rating. Free for Italy in the Med. With the Strategic Bombing doctrine, a naval op may instead **bomb** an enemy industrial territory within two steps of your ground: 1–4 dice at 5+, each hit −1 production (−2 under a bombing surge), 2+ hits −1 Home Front. |
+| Entrench | 1 | Defender threshold −1 this round. Needs supply. With Fortress Engineering, +1 CP also raises a fort level. |
 | Operations card | printed 1–3 | Declared now, resolves in 4.5 attached to a battle. |
 | Intelligence op | 2 | Shift one Pressure track ±1, or seed deception (blinds Ultra). |
 | Lend-lease | 1 (USA: 0) | 1–4 production to an ally along an open lane. |
@@ -99,11 +99,13 @@ buys the attacker a one-round first strike. Broken promises become visible
 here and nowhere else.
 
 **4.5 Resolution.**
-1. **Initiative**: each side rolls a d6 (+ pool points bid); ties go to the
-   coin.
+1. **Initiative**: each side rolls a d6, +1 per 2 coalition pool bid in the
+   order sheets; ties go to the coin.
 2. **The coin**: the initiative side names one contested land battle — before
-   any dice. Heads: the attack carries, both forces lose half. Tails: the
-   line holds, both bleed half. Nothing modifies the coin.
+   any dice. Heads: the attack carries — the defenders (the losers) lose half
+   rounded up, the remnant retreats if it can, and the ground falls. Tails:
+   the line holds — the attackers lose half and march home. The winner is
+   untouched. Nothing modifies the coin.
 3. **Moves** execute, entrenchments dig in, committed strength marches out.
 4. **Battles**, theatre by theatre (Atlantic → Scandinavia → West → East →
    Balkans → Med → China → SE Asia → Pacific), naval before land:
@@ -156,8 +158,9 @@ Cutting a corridor is often worth more than winning a battle.
 
 Earn: +1 per extra power in a joint order · +1 per completed lend-lease ·
 +2 per Supreme Commander elected in a 3+-power theatre.
-Spend: **2** reroll a battle · **2** bid for initiative · **3** emergency
-resupply · **4** cancel an opponent's event. Any member spends it. A team
+Spend: **2** reroll a battle · **2** per +1 on the initiative roll · **3**
+emergency resupply (2 strength in a supplied friendly territory, ordered on
+the sheet) · **4** cancel an opponent's event. Any member spends it. A team
 that never coordinates never has any.
 
 ## 7. Neutrality (GDD §9, settled)

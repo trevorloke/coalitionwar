@@ -101,7 +101,7 @@ also be `'axis'`/`'allied'` (applies to every at-war power on that side).
 { op:'placeStrength', power, where:<territory id>|'owned_industrial'|'capital', amount:int }
 { op:'removeStrength', power, where:<territory id>|'choose', amount:int }
 { op:'homeFront', power, delta:int }                                 // clamp 0..10
-{ op:'commandPoints', power, delta:int }                             // this round only
+{ op:'commandPoints', power, delta:int }                             // next round's budget (events fire after sheets seal)
 { op:'coalitionPool', side:'axis'|'allied', delta:int }
 { op:'production', power, delta:int, rounds:int }
 { op:'thresholdMod', power|side, theatre:<id>|null, role:'attack'|'defense', delta:int, rounds:1 }
@@ -128,7 +128,7 @@ also be `'axis'`/`'allied'` (applies to every at-war power on that side).
 | `no_lend_lease` | Lend-lease orders cannot be executed this round |
 | `blitz_bonus` | Germany's free advance may move 2 territories this round |
 | `fortress_europe` | Axis defenders in `west` get +1 fort level this round |
-| `island_hopping` | USA amphibious offensives in `pacific` cost 2 CP instead of 3 |
+| `island_hopping` | USA amphibious offensives in `pacific` cost 2 CP less (minimum 2) |
 | `deception` | Named power's written orders are hidden from Ultra this round |
 
 ## 4. Strategy cards (~110, shared deck in 3 era piles)
@@ -160,7 +160,7 @@ Play a card for ops OR event; an opponent-aligned card played for ops fires its 
 Allowed `kind`s (closed set):
 `reroll {dice}` · `extra_dice {dice, exhaustion}` · `ambush {delta}` (attacker threshold worse) ·
 `entrench_bonus {delta}` · `convoy_strike {}` · `cancel_advance {}` · `retreat {}` (withdraw before combat) ·
-`intel_peek {}` (read one order line) · `repair {strength}` · `naval_reroll {dice}` ·
+`intel_peek {}` (the signals desk: draw 1 operations card at the reveal) · `repair {strength}` · `naval_reroll {dice}` ·
 `threshold {role, delta}` · `exhaust_enemy {strength}`.
 
 ## 6. Doctrine draft pool (2 drafted per power before round 1; public)
@@ -194,13 +194,17 @@ NOT part of the draft pool.
 - Combat: d6 per strength point, hit on 5+; −1 threshold (better) per allied power beyond the
   first committing ≥1 strength to the same offensive, floor 3. Max 8 strength committed per
   power per offensive. Defender hits on 5+, +1 threshold shift for terrain/fort/entrench.
-- The coin: once per round, initiative holder picks one contested resolution before any dice;
-  that battle is decided by coin flip (attacker wins ties on... no ties: heads attacker takes
-  the territory with survivors, tails defender holds; loser loses half strength, rounded up).
+- The coin: once per round, the initiative holder picks one contested land battle before any
+  dice; a coin decides it. Heads: the attack carries — the defender (the loser) loses half its
+  strength rounded up, the remnant retreats to an adjacent friendly territory (destroyed if
+  none), and the attackers take the ground intact. Tails: the line holds — the attackers (the
+  losers) each lose half rounded up and the rest march home. The winner is untouched. No card,
+  doctrine, reroll, or pool spend modifies the coin.
 - Coalition pool: +1 per extra power in a joint order, +1 per completed lend-lease,
   +2 for electing a Supreme Commander in a theatre with ≥3 active powers of that side.
-  Spend: 2 = reroll a battle's dice once; 2 = seize theatre initiative; 3 = emergency resupply
-  (place 2 strength any supplied friendly territory); 4 = cancel an opponent event card.
+  Spend: 2 = reroll a battle's dice once; 2 = +1 on your side's initiative roll (bid in the
+  order sheet); 3 = emergency resupply (place 2 strength in a supplied friendly territory);
+  4 = cancel an opponent event card.
 - Pressure: 0–10. At 7+ may enter at start of round; at 10 auto-enters. Attacked while
   neutral → 10 immediately + attacker first-strike for one round.
 - Home Front 0–10. At 0: Italy flips (north stays Axis under Germany, south co-belligerent

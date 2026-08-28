@@ -54,6 +54,8 @@ export function createGame(options = {}) {
     pool: { axis: 0, allied: 0 },
     initiative: 'axis',
     commanders: {},
+    commanderSpent: {},
+    bombedThisRound: {},
     activeFlags: [],
     thresholdMods: [],
     corridors: {},
@@ -109,23 +111,30 @@ export function createGame(options = {}) {
     .filter(([, t]) => t.setup.owner === 'china')
     .map(([tid]) => tid);
 
-  // Doctrine draft: honor explicit picks, else auto-draft the first two eligible.
+  // Doctrine draft: honor explicit picks (max two), then snake-fill so the
+  // seats with the thinnest pools pick first — every power ends with two.
   const picks = options.doctrines ?? {};
   const taken = new Set();
+  const chosenBy = Object.fromEntries(Object.keys(POWERS).map(p => [p, []]));
   for (const pid of Object.keys(POWERS)) {
-    const wanted = picks[pid] ?? [];
-    const eligible = DOCTRINES.filter(d => d.pool.includes(pid));
-    const chosen = [];
-    for (const id of wanted) {
+    for (const id of (picks[pid] ?? []).slice(0, 2)) {
       const d = game.doctrines[id];
-      if (d && d.pool.includes(pid) && !taken.has(id)) { chosen.push(id); taken.add(id); }
+      if (d && d.pool.includes(pid) && !taken.has(id)) { chosenBy[pid].push(id); taken.add(id); }
     }
-    for (const d of eligible) {
-      if (chosen.length >= 2) break;
-      if (!taken.has(d.id)) { chosen.push(d.id); taken.add(d.id); }
-    }
-    state.powers[pid].doctrines = chosen;
   }
+  for (let round = 0; round < 2; round++) {
+    const order = Object.keys(POWERS)
+      .filter(pid => chosenBy[pid].length < 2)
+      .sort((a, b) =>
+        DOCTRINES.filter(d => d.pool.includes(a) && !taken.has(d.id)).length -
+        DOCTRINES.filter(d => d.pool.includes(b) && !taken.has(d.id)).length);
+    for (const pid of order) {
+      if (chosenBy[pid].length >= round + 1) continue;
+      const d = DOCTRINES.find(x => x.pool.includes(pid) && !taken.has(x.id));
+      if (d) { chosenBy[pid].push(d.id); taken.add(d.id); }
+    }
+  }
+  for (const pid of Object.keys(POWERS)) state.powers[pid].doctrines = chosenBy[pid];
 
   recomputeCorridors(game, state);
   traceSupply(game, state);

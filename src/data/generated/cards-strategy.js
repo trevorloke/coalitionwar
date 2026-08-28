@@ -150,7 +150,7 @@ export const STRATEGY_CARDS = [
   "title": "The Parallel War",
   "ops": 3,
   "side": "axis",
-  "text": "Italy gains +2 Command Points this round and places 1 strength in Northern Italy.",
+  "text": "Italy gains +2 Command Points next round and places 1 strength in Northern Italy.",
   "effects": [
    {
     "op": "commandPoints",
@@ -261,7 +261,7 @@ export const STRATEGY_CARDS = [
   "title": "Maginot Mentality",
   "ops": 2,
   "side": "allied",
-  "text": "Add 1 fort level to Paris. The UK seat loses 1 Command Point this round.",
+  "text": "Add 1 fort level to Paris. The UK seat loses 1 Command Point next round.",
   "effects": [
    {
     "op": "fort",
@@ -305,7 +305,7 @@ export const STRATEGY_CARDS = [
   "title": "Churchill Takes Office",
   "ops": 3,
   "side": "allied",
-  "text": "UK Home Front +2. UK gains +1 Command Point this round and draws 1 Operations card.",
+  "text": "UK Home Front +2. UK gains +1 Command Point next round and draws 1 Operations card.",
   "effects": [
    {
     "op": "homeFront",
@@ -425,7 +425,7 @@ export const STRATEGY_CARDS = [
   "id": "early_america_first",
   "title": "America First Committee",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "USA Pressure -2.",
   "effects": [
    {
@@ -465,7 +465,7 @@ export const STRATEGY_CARDS = [
   "id": "early_winter_war",
   "title": "The Winter War",
   "ops": 3,
-  "side": "neutral",
+  "side": "axis",
   "text": "Remove 2 USSR strength from one territory of the USSR player's choice. Finland Pressure -2; USSR Home Front -1.",
   "effects": [
    {
@@ -587,7 +587,7 @@ export const STRATEGY_CARDS = [
     "power": "uk",
     "theatre": "atlantic",
     "role": "defense",
-    "delta": 1,
+    "delta": -1,
     "rounds": 1
    }
   ],
@@ -652,7 +652,7 @@ export const STRATEGY_CARDS = [
   "title": "The Phoney War",
   "ops": 1,
   "side": "neutral",
-  "text": "Germany and the UK each lose 1 Command Point this round.",
+  "text": "Germany and the UK each lose 1 Command Point next round.",
   "effects": [
    {
     "op": "commandPoints",
@@ -673,7 +673,7 @@ export const STRATEGY_CARDS = [
   "id": "early_swedish_iron_ore",
   "title": "Swedish Iron Ore",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "Germany production +1 for 2 rounds.",
   "effects": [
    {
@@ -691,7 +691,7 @@ export const STRATEGY_CARDS = [
   "id": "early_hendaye",
   "title": "Franco Demurs at Hendaye",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Add 1 fort level to Gibraltar.",
   "effects": [
    {
@@ -920,7 +920,7 @@ export const STRATEGY_CARDS = [
   "title": "Case Blue",
   "ops": 4,
   "side": "axis",
-  "text": "The summer offensive drives for the Volga and the Caucasus oil: Germany gains 2 command points this round and German attacks in the Eastern Front hit one better.",
+  "text": "The summer offensive drives for the Volga and the Caucasus oil: Germany gains 2 command points next round and German attacks in the Eastern Front hit one better.",
   "effects": [
    {
     "op": "commandPoints",
@@ -1192,7 +1192,7 @@ export const STRATEGY_CARDS = [
   "title": "Tojo Consolidates",
   "ops": 2,
   "side": "axis",
-  "text": "The war cabinet tightens its grip on the ministries and the press: Japanese Home Front +2 and Japan gains 1 command point this round.",
+  "text": "The war cabinet tightens its grip on the ministries and the press: Japanese Home Front +2 and Japan gains 1 command point next round.",
   "effects": [
    {
     "op": "homeFront",
@@ -1245,7 +1245,7 @@ export const STRATEGY_CARDS = [
     "power": "uk",
     "theatre": "atlantic",
     "role": "defense",
-    "delta": 1,
+    "delta": -1,
     "rounds": 1
    },
    {
@@ -1268,7 +1268,7 @@ export const STRATEGY_CARDS = [
   "id": "mid_occupation_terror",
   "title": "Terror in the Occupied East",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Word of the regime's crimes in the occupied territories spreads across every border: German Home Front −1, and the Allied coalition pool gains 1 as resistance hardens.",
   "effects": [
    {
@@ -1336,7 +1336,7 @@ export const STRATEGY_CARDS = [
     "power": "japan",
     "theatre": "seasia",
     "role": "defense",
-    "delta": -1,
+    "delta": 1,
     "rounds": 1
    }
   ],
@@ -1387,7 +1387,7 @@ export const STRATEGY_CARDS = [
     "power": "ussr",
     "theatre": "eastern",
     "role": "defense",
-    "delta": 1,
+    "delta": -1,
     "rounds": 1
    },
    {
@@ -1428,7 +1428,7 @@ export const STRATEGY_CARDS = [
   "title": "Commando Raids",
   "ops": 2,
   "side": "allied",
-  "text": "Raids from Vaagso to St-Nazaire keep the whole coastline garrisoned: Germany loses 1 command point this round and British Home Front +1.",
+  "text": "Raids from Vaagso to St-Nazaire keep the whole coastline garrisoned: Germany loses 1 command point next round and British Home Front +1.",
   "effects": [
    {
     "op": "commandPoints",
@@ -1525,7 +1525,7 @@ export const STRATEGY_CARDS = [
   "id": "mid_finlands_separate_war",
   "title": "Finland's Separate War",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Helsinki insists it fights its own war and halts at the old border while Washington keeps a door open: Finnish Pressure +2.",
   "effects": [
    {
@@ -1664,7 +1664,7 @@ export const STRATEGY_CARDS = [
   "id": "mid_swedish_ore",
   "title": "Swedish Iron Ore",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "The ore keeps moving from Kiruna through the Baltic in neutral bottoms: German production +1 for 2 rounds.",
   "effects": [
    {
@@ -1682,7 +1682,7 @@ export const STRATEGY_CARDS = [
   "id": "mid_franco_demurs",
   "title": "Franco Demurs",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "Madrid names an impossible price for joining the Axis and the Rock is left unmolested: add 1 fort in Gibraltar.",
   "effects": [
    {
@@ -1744,8 +1744,13 @@ export const STRATEGY_CARDS = [
   "title": "Overlord",
   "ops": 4,
   "side": "allied",
-  "text": "The Allies land in Normandy: place 3 US and 2 UK strength in Normandy, and Allied offensives in the West hit on 4+ this round.",
+  "text": "The Allies storm ashore and take Normandy: the USA seizes control of it, place 3 US and 2 UK strength there, and Allied offensives in the West hit one better this round.",
   "effects": [
+   {
+    "op": "control",
+    "territory": "normandy",
+    "power": "usa"
+   },
    {
     "op": "placeStrength",
     "power": "usa",
@@ -1776,7 +1781,7 @@ export const STRATEGY_CARDS = [
   "title": "Bagration",
   "ops": 4,
   "side": "allied",
-  "text": "Army Group Centre is destroyed: Germany removes 3 strength of its choice, the USSR gains +2 CP, and Soviet offensives in the East hit on 4+ this round.",
+  "text": "Army Group Centre is destroyed: Germany removes 3 strength of its choice, the USSR gains +2 CP next round, and Soviet offensives in the East hit on 4+ this round.",
   "effects": [
    {
     "op": "removeStrength",
@@ -1807,7 +1812,7 @@ export const STRATEGY_CARDS = [
   "title": "Market Garden",
   "ops": 3,
   "side": "allied",
-  "text": "A bridge too far: the UK gains +3 CP and its offensives in the West hit on 4+ this round, then loses 2 strength of its choice.",
+  "text": "A bridge too far: the UK gains +3 CP next round and its offensives in the West hit on 4+ this round, then loses 2 strength of its choice.",
   "effects": [
    {
     "op": "commandPoints",
@@ -1922,7 +1927,7 @@ export const STRATEGY_CARDS = [
   "title": "Iwo Jima",
   "ops": 3,
   "side": "allied",
-  "text": "The flag rises on Suribachi: US amphibious offensives in the Pacific cost 2 CP instead of 3 this round, and US offensives there hit on 4+.",
+  "text": "The flag rises on Suribachi: US amphibious offensives in the Pacific cost 2 CP less this round (minimum 2), and US offensives there hit on 4+.",
   "effects": [
    {
     "op": "flag",
@@ -2108,7 +2113,7 @@ export const STRATEGY_CARDS = [
   "title": "Red Army Logistics",
   "ops": 3,
   "side": "allied",
-  "text": "American trucks and re-gauged rails: Soviet builds cost 1 less production each for two rounds, and the USSR gains +1 CP this round.",
+  "text": "American trucks and re-gauged rails: Soviet builds cost 1 less production each for two rounds, and the USSR gains +1 CP next round.",
   "effects": [
    {
     "op": "flag",
@@ -2131,7 +2136,7 @@ export const STRATEGY_CARDS = [
   "title": "Zhukov's Fronts",
   "ops": 4,
   "side": "allied",
-  "text": "Deep Battle comes of age: the USSR gains +2 CP, places 2 strength at an owned industrial city, and Soviet offensives in the East hit on 4+ this round.",
+  "text": "Deep Battle comes of age: the USSR gains +2 CP next round, places 2 strength at an owned industrial city, and Soviet offensives in the East hit on 4+ this round.",
   "effects": [
    {
     "op": "commandPoints",
@@ -2292,7 +2297,7 @@ export const STRATEGY_CARDS = [
   "title": "Operation Ichi-Gō",
   "ops": 4,
   "side": "axis",
-  "text": "Japan's largest land offensive lunges for the airfields: Japan gains +2 CP, its offensives in China & Manchuria hit on 4+ this round, and China's Home Front drops 1.",
+  "text": "Japan's largest land offensive lunges for the airfields: Japan gains +2 CP next round, its offensives in China & Manchuria hit on 4+ this round, and China's Home Front drops 1.",
   "effects": [
    {
     "op": "commandPoints",
@@ -2430,7 +2435,7 @@ export const STRATEGY_CARDS = [
   "title": "Total War",
   "ops": 3,
   "side": "axis",
-  "text": "'Wollt ihr den totalen Krieg?' Germany gains +2 CP this round, and its Home Front drops 1.",
+  "text": "'Wollt ihr den totalen Krieg?' Germany gains +2 CP next round, and its Home Front drops 1.",
   "effects": [
    {
     "op": "commandPoints",
@@ -2480,7 +2485,7 @@ export const STRATEGY_CARDS = [
   "title": "The Warsaw Rising",
   "ops": 3,
   "side": "neutral",
-  "text": "The Home Army rises while the Red Army halts on the Vistula: Germany removes 1 strength from Western Poland, the USSR loses 1 CP, and the Allied coalition pool drops 1.",
+  "text": "The Home Army rises while the Red Army halts on the Vistula: Germany removes 1 strength from Western Poland, the USSR loses 1 CP next round, and the Allied coalition pool drops 1.",
   "effects": [
    {
     "op": "removeStrength",
@@ -2507,8 +2512,8 @@ export const STRATEGY_CARDS = [
   "id": "late_valkyrie",
   "title": "Valkyrie",
   "ops": 3,
-  "side": "neutral",
-  "text": "The bomb under the map table fails and the purge begins: Germany's Home Front drops 2 and it loses 2 CP this round.",
+  "side": "allied",
+  "text": "The bomb under the map table fails and the purge begins: Germany's Home Front drops 2 and it loses 2 CP next round.",
   "effects": [
    {
     "op": "homeFront",
@@ -2529,7 +2534,7 @@ export const STRATEGY_CARDS = [
   "id": "late_bring_the_boys_home",
   "title": "Bring the Boys Home",
   "ops": 2,
-  "side": "neutral",
+  "side": "axis",
   "text": "Six years of war tell on the democracies: the UK's and the USA's Home Fronts each drop 1.",
   "effects": [
    {
@@ -2551,7 +2556,7 @@ export const STRATEGY_CARDS = [
   "id": "late_bled_white",
   "title": "Bled White",
   "ops": 2,
-  "side": "neutral",
+  "side": "allied",
   "text": "The Axis war economies pass the breaking point: Germany's and Japan's Home Fronts each drop 1.",
   "effects": [
    {

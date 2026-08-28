@@ -151,7 +151,12 @@ export function recomputeCorridors(game, state) {
     }
     const listedAtWar = c.powers.filter(p => state.powers[p] && state.powers[p].atWar);
     const need = listedAtWar.length >= 2 ? 2 : 1;
-    const open = !blocked && present.size >= need && state.corridors[cid].forcedClosed === 0;
+    let open = !blocked && present.size >= need && state.corridors[cid].forcedClosed === 0;
+    // The Burma Road is China's lifeline: it needs China's own presence plus
+    // one Western partner — the UK and USA cannot hold it open by themselves.
+    if (cid === 'burma_road' && open && state.powers.china.atWar) {
+      open = present.has('china') && (present.has('uk') || present.has('usa') || listedAtWar.length === 1);
+    }
     state.corridors[cid].open = open;
   }
 }

@@ -74,6 +74,7 @@ export class Coalition1939 {
       const side = sideOfPower(s, pick.power);
       const active = powersActiveInTheatre(this.game, s, theatre, side);
       if (!active.includes(pick.power)) continue;
+      if (s.commanders[`${theatre}|${side}`]) continue; // one election per office
       s.commanders[`${theatre}|${side}`] = { power: pick.power, side };
       if (active.length >= 3) {
         s.pool[side] += 2;
@@ -94,7 +95,7 @@ export class Coalition1939 {
   submitOrders(powerId, sheet) {
     const s = this.state;
     if (s.phase !== 'orders') throw new Error('not the orders phase');
-    const v = validateSheet(this.game, s, powerId, sheet);
+    const v = validateSheet(this.game, s, powerId, sheet, { commit: true });
     s.orders[powerId] = { power: powerId, orders: v.orders, spent: v.spent, dropped: v.dropped };
     return v;
   }

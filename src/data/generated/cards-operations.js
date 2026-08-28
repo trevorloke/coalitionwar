@@ -59,7 +59,7 @@ export const OPS_CARDS = [
   "powers": "any",
   "text": "In one battle where you defend, the attacker's hit threshold worsens by 1 (a 5+ becomes 6), as if you were entrenched.",
   "effect": {
-   "kind": "entrench_bonus",
+   "kind": "ambush",
    "delta": 1
   }
  },
@@ -71,7 +71,7 @@ export const OPS_CARDS = [
   "powers": "any",
   "text": "In one battle where you defend, the attacker's hit threshold worsens by 2, as if you were doubly entrenched.",
   "effect": {
-   "kind": "entrench_bonus",
+   "kind": "ambush",
    "delta": 2
   }
  },
@@ -127,7 +127,7 @@ export const OPS_CARDS = [
   "cost": 1,
   "timing": "orders",
   "powers": "any",
-  "text": "Play during orders, before the reveal: read one line of one opponent's written orders.",
+  "text": "Play during orders: the signals desk pays off — draw 1 operations card at the reveal.",
   "effect": {
    "kind": "intel_peek"
   }
@@ -166,7 +166,7 @@ export const OPS_CARDS = [
   "effect": {
    "kind": "threshold",
    "role": "attack",
-   "delta": -1
+   "delta": 1
   }
  },
  {
@@ -179,7 +179,7 @@ export const OPS_CARDS = [
   "effect": {
    "kind": "threshold",
    "role": "defense",
-   "delta": -1
+   "delta": 1
   }
  },
  {
@@ -208,7 +208,7 @@ export const OPS_CARDS = [
   "effect": {
    "kind": "threshold",
    "role": "attack",
-   "delta": -1
+   "delta": 1
   }
  },
  {
@@ -250,7 +250,7 @@ export const OPS_CARDS = [
   ],
   "text": "In one battle where you defend, the attacker's hit threshold worsens by 2, as if you were entrenched behind prepared works.",
   "effect": {
-   "kind": "entrench_bonus",
+   "kind": "ambush",
    "delta": 2
   }
  },
@@ -318,7 +318,7 @@ export const OPS_CARDS = [
   "powers": [
    "usa"
   ],
-  "text": "Play during orders, before the reveal: read one line of one opponent's written orders.",
+  "text": "Play during orders: the signals desk pays off — draw 1 operations card at the reveal.",
   "effect": {
    "kind": "intel_peek"
   }
