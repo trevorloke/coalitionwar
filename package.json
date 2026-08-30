@@ -7,6 +7,7 @@
     "test": "node --test test/*.test.js",
     "sim": "node sim/run.js",
     "validate": "node sim/validate-data.js",
+    "map": "node tools/build-map-geometry.js",
     "build": "node build.js"
   },
   "license": "MIT"

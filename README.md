@@ -61,6 +61,7 @@ node sim/run.js game 7 # one verbose game, full log
 | `src/engine/` | Deterministic rules engine (no DOM, fully testable) |
 | `src/ui/` | The war-room UI (SVG board, order sheets, commit-reveal) |
 | `sim/` | AI-vs-AI simulation and content validators |
+| `tools/` | Map geometry builder (`npm run map`): real coastlines and boundaries from world-atlas 50m data, Miller-projected Pacific-right |
 | `build.js` | Bundles everything into one HTML file |
 
 The engine is deterministic from its seed: every die, draw, and the coin come
