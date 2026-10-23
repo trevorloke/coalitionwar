@@ -67,3 +67,9 @@ node sim/run.js game 7 # one verbose game, full log
 The engine is deterministic from its seed: every die, draw, and the coin come
 from one RNG stream, so a game replays identically and online players can
 verify each other's rounds.
+
+## Also in this repository: Starbase
+
+[`starbase/`](starbase/) is a separate app: a supporter database and
+door-to-door canvassing tool with a Google Maps phone view, piloting with
+Imagine Surrey. See [`starbase/README.md`](starbase/README.md).

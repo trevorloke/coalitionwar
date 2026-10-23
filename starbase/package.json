@@ -1,0 +1,15 @@
+{
+  "name": "starbase",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Starbase — supporter database and door-to-door canvassing app with Google Maps. Piloting with Imagine Surrey.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "demo": "node --disable-warning=ExperimentalWarning server/seed.js --demo",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
+  }
+}
